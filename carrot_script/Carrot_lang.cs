@@ -241,14 +241,12 @@ namespace Carrot
             this.carrot.hide_loading();
             act_after_selecting_lang?.Invoke(s_key_new);
 
-            Debug.Log("Emp load status:" + this.is_load_emp_after_sel_lang);
-
             if (this.is_load_emp_after_sel_lang)
-            {    
+            {
+                PlayerPrefs.SetString("lang", this.s_lang_key);
                 this.s_lang_key = s_key_new;
                 this.Load_icon_lang();
                 this.Load_lang_emp();
-                PlayerPrefs.SetString("lang", this.s_lang_key);
             }
             if (this.box_lang != null) this.box_lang.close();
             

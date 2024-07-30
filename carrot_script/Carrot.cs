@@ -1060,14 +1060,18 @@ namespace Carrot
 
         private void change_lang_in_setting(string s_data)
         {
-            this.item_setting_lang.set_tip(this.lang.Get_key_lang());
-            this.item_setting_lang.set_icon_white(this.lang.Get_sp_lang_cur());
             if (this.item_setting_lang != null) this.item_setting_lang.set_change_status(true);
             this.box_setting.set_title(lang.Val("setting", "Setting"));
             foreach (Transform tr in this.box_setting.area_all_item)
             {
                 if (tr.gameObject.GetComponent<Carrot_Box_Item>()) tr.gameObject.GetComponent<Carrot_Box_Item>().load_lang_data();
             }
+            this.delay_function(1f, () =>
+            {
+                this.item_setting_lang.set_icon_white(this.lang.Get_sp_lang_cur());
+                this.item_setting_lang.set_tip(this.lang.Get_key_lang());
+            });
+            
         }
 
         public void buy_inapp_removeads()
