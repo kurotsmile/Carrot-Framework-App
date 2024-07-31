@@ -29,6 +29,7 @@ namespace Carrot
         public string mainhost = "https://carrotstore.web.app";
         public string key_api_rest_firestore = "";
         public string key_api_google_location_map= "";
+        public string[] list_url_config;
         public string[] list_url_country;
         public string[] list_url_lang_app;
         public string[] list_url_lang_framework;
@@ -58,6 +59,7 @@ namespace Carrot
         private Carrot_Window_Loading loading;
         private List<string> list_log;
         private int count_change_model_app = 0;
+        private bool fullscreenToggle;
 
         [Header("Login Obj")]
         public Image img_btn_login;
@@ -179,6 +181,7 @@ namespace Carrot
         public Sprite sp_icon_picker_color;
         public Sprite sp_icon_mixer_color;
         public Sprite sp_icon_table_color;
+        public Sprite sp_icon_fullscene;
         public Sprite icon_carrot_donation;
         public Sprite icon_carrot_facebook;
 
@@ -215,6 +218,7 @@ namespace Carrot
             this.shop.onCarrotRestoreSuccess += this.carrot_restore_success;
             this.ads.On_load(this);
             this.theme.On_load(this);
+            fullscreenToggle = Screen.fullScreen;
 
             if (this.type_app == TypeApp.Game) this.ads.onRewardedSuccess += this.game.OnRewardedSuccess;
             this.ads.onRewardedSuccess += this.theme.OnRewardedSuccess;
@@ -919,6 +923,16 @@ namespace Carrot
                 btn_dev_ads.set_act(() => ads.Show_box_dev_test());
             }
 
+            if (this.os_app == OS.Window)
+            {
+                Carrot_Box_Item item_setting_Fullscreen = box_setting.create_item();
+                item_setting_Fullscreen.set_icon(this.sp_icon_fullscene);
+                item_setting_Fullscreen.set_title(this.L("fullscreen", "Full screen"));
+                item_setting_Fullscreen.set_tip(this.L("fullscreen_tip", "Switch between windowed and full screen mode"));
+                item_setting_Fullscreen.set_lang_data("fullscreen", "fullscreen_tip");
+                item_setting_Fullscreen.set_act(this.fullscreen);
+            }
+
             Carrot_Box_Item item_setting_del_data = box_setting.create_item();
             item_setting_del_data.set_icon(this.sp_icon_del_data);
             item_setting_del_data.set_title(lang.Val("delete_all_data", "Clear all application data"));
@@ -930,6 +944,21 @@ namespace Carrot
             btn_support.set_act(Show_Support);
 
             return box_setting;
+        }
+
+        public void fullscreen()
+        {
+            this.play_sound_click();
+            if (this.fullscreenToggle)
+            {
+                this.fullscreenToggle = false;
+                Screen.fullScreen = false;
+            }
+            else
+            {
+                this.fullscreenToggle = true;
+                Screen.fullScreen = true;
+            }
         }
 
         public void Reload_setting()
@@ -1433,7 +1462,6 @@ namespace Carrot
                     //Debug.Log($"Download: {progress * 100}%");
                     yield return null;
                 }
-               
 
                 if (www.result != UnityWebRequest.Result.Success)
                 {

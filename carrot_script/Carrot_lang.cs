@@ -28,7 +28,6 @@ namespace Carrot
             this.data_lang_offline = (IDictionary)Json.Deserialize("{}");
             if (this.carrot.is_offline()) this.s_data_json_list_lang_offline = PlayerPrefs.GetString("s_data_json_list_lang_offline","");
             this.s_lang_key = PlayerPrefs.GetString("lang", "en");
-
             this.Load_val_data_lang();
             this.Load_icon_lang();
             this.Load_lang_emp();
@@ -239,11 +238,11 @@ namespace Carrot
         private void Change_lang(string s_key_new)
         {
             this.carrot.hide_loading();
+            PlayerPrefs.SetString("lang", s_key_new);
             act_after_selecting_lang?.Invoke(s_key_new);
-
+            
             if (this.is_load_emp_after_sel_lang)
             {
-                PlayerPrefs.SetString("lang", this.s_lang_key);
                 this.s_lang_key = s_key_new;
                 this.Load_icon_lang();
                 this.Load_lang_emp();

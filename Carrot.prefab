@@ -329,7 +329,6 @@ MonoBehaviour:
   type_rate: 0
   type_ads: 0
   type_control: 0
-  collection_document_lang: 
   WindowUWP_ProductId: 
   Carrotstore_AppId: 
   color_highlight:
@@ -432,6 +431,7 @@ MonoBehaviour:
   sp_icon_picker_color: {fileID: 21300000, guid: 0a382b6beac8e7f43a80a538c365428f, type: 3}
   sp_icon_mixer_color: {fileID: 21300000, guid: 6e5c319bd909a8b45a76b79b09c4d7ad, type: 3}
   sp_icon_table_color: {fileID: 21300000, guid: 64bb4451566672a4786416bf9bfa9eb4, type: 3}
+  sp_icon_fullscene: {fileID: 21300000, guid: 8533bf69cd8ce764da75980f7c7a98f6, type: 3}
   icon_carrot_donation: {fileID: 21300000, guid: 40acfd82149b2d44ab6ec251629a6ca4, type: 3}
   icon_carrot_facebook: {fileID: 21300000, guid: a81b655be664d824fae332ded21127b8, type: 3}
   carrot_lost_internet: {fileID: 0}
