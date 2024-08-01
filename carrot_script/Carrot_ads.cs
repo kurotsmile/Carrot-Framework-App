@@ -160,9 +160,11 @@ namespace Carrot
             else
             {
                 this.carrot.show_loading();
-                StructuredQuery q = new("app");
-                q.Add_where("status", Query_OP.EQUAL, "publish");
-                this.carrot.server.Get_doc(q.ToJson(), Act_show_carrot_ads_done, Act_show_carrot_ads_fail);
+                IList list_url_app = carrot.config["list_url_app"] as IList;
+                this.carrot.Get_Data(carrot.random(list_url_app), (data) =>
+                {
+                    Act_show_carrot_ads_done(data);
+                },show_carrot_ads);
             }
         }
 
@@ -182,8 +184,11 @@ namespace Carrot
 
         private void Act_load_ads_data(string s_data)
         {
-            Fire_Collection fc = new(s_data);
-            if (!fc.is_null) this.Act_show_ads(fc.Get_doc_random().Get_IDictionary());
+            IDictionary data_app = Json.Deserialize(s_data) as IDictionary;
+            IList list_app = data_app["all_item"] as IList;
+            int index_random = Random.Range(0, list_app.Count);
+            IDictionary app_ads = list_app[index_random] as IDictionary;
+            this.Act_show_ads(app_ads);
         }
 
         private void Act_show_ads(IDictionary data_ads)
@@ -196,9 +201,6 @@ namespace Carrot
             ads.Load_data_ads(data_ads);
         }
         #endregion
-
-       
-        
 
         #region Unity Ads
 

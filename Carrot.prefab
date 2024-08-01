@@ -314,6 +314,9 @@ MonoBehaviour:
   mainhost: https://carrotstore.web.app
   key_api_rest_firestore: 
   key_api_google_location_map: 
+  list_url_config:
+  - https://raw.githubusercontent.com/kurotsmile/Database-Store-Json/main/config/carrot_framework_config.json
+  - https://www.googleapis.com/drive/v3/files/164HKCBnFqiHlvQyTdn5bVN1xbKVrjUXB?alt=media&key=AIzaSyDKcjH_bDJz3EcqPdV5i62IZNVQ6EkyOFg
   list_url_country:
   - https://raw.githubusercontent.com/kurotsmile/Database-Store-Json/main/lang.json
   - https://www.googleapis.com/drive/v3/files/1TUObqv-6R0Vp7dfmNekijZB61o_HqZQp?alt=media&key=AIzaSyDKcjH_bDJz3EcqPdV5i62IZNVQ6EkyOFg

@@ -25,7 +25,7 @@ namespace Carrot
 
         public void Load_data_ads(IDictionary data_ads)
         {
-            string id_app = data_ads["id"].ToString();
+            string id_app = data_ads["name_en"].ToString();
             this.pic_img_ads.GetComponent<Animator>().enabled = true;
             this.is_show_ads = true;
             this.slider_timer_ads.value = 0;

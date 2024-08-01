@@ -30,9 +30,7 @@ namespace Carrot
         public string key_api_rest_firestore = "";
         public string key_api_google_location_map= "";
         public string[] list_url_config;
-        public string[] list_url_country;
         public string[] list_url_lang_app;
-        public string[] list_url_lang_framework;
 
         [Header("Config App")]
         public ModelApp model_app;
@@ -202,6 +200,7 @@ namespace Carrot
         public UnityAction act_after_delete_all_data;
         private UnityAction act_result_msg_config;
         private bool is_ready = false;
+        public IDictionary config;
         
         public void Load_Carrot()
         {
@@ -237,6 +236,21 @@ namespace Carrot
                 this.is_vibrate = false;
             if (this.check_lost_internet) this.check_connect_internet();
             this.is_ready = true;
+
+            this.Get_Config();
+        }
+
+        private void Get_Config(UnityAction act_done=null)
+        {
+            this.Get_Data(this.random(this.list_url_config), (data) =>
+            {
+                this.config = Json.Deserialize(data) as IDictionary;
+                this.is_ready = true;
+                act_done?.Invoke();
+            }, () =>
+            {
+                this.Get_Config(act_done);
+            });
         }
 
         public void Load_Carrot(UnityAction act_check_exit_app)
@@ -518,6 +532,7 @@ namespace Carrot
 
         private void Restart_app()
         {
+            this.is_ready = false;
             if(this.msg!=null) this.msg.close();
             close_all_window();
             if(this.act_after_delete_all_data!=null)
@@ -581,7 +596,13 @@ namespace Carrot
 
         public void Show_list_lang(UnityAction<string> call_func)
         {
-            this.lang.Show_list_lang(call_func);
+            if (this.is_ready)
+                this.lang.Show_list_lang(call_func);
+            else
+                this.Get_Config(() =>
+                {
+                    this.Show_list_lang(call_func);
+                });
         }
 
         public void buy_product(int index)
@@ -1443,6 +1464,11 @@ namespace Carrot
         public string random(string[] list)
         {
             return list[Random.Range(0, list.Length)];
+        }
+
+        public string random(IList list)
+        {
+            return list[Random.Range(0, list.Count)].ToString();
         }
 
         public void Get_Data(string url, UnityAction<string> done_act, UnityAction fail_act=null)

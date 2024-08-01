@@ -61,7 +61,10 @@ namespace Carrot
             this.act_after_selecting_lang = null;
 
             if (this.s_data_json_list_lang_offline == "")
-                this.carrot.Get_Data(carrot.random(carrot.list_url_country),this.Get_doc_done, this.Show_list_lang);
+            {
+                IList list_url_country = carrot.config["list_url_country"] as IList;
+                this.carrot.Get_Data(carrot.random(list_url_country), this.Get_doc_done, this.Show_list_lang);
+            }
             else
                 this.Load_list_lang_by_data(this.s_data_json_list_lang_offline);
         }
@@ -181,7 +184,8 @@ namespace Carrot
             {
                 this.carrot.show_loading();
                 this.s_key_lang_temp = s_key;
-                this.carrot.Get_Data(this.carrot.random(this.carrot.list_url_lang_framework), Act_sel_lang_done, () =>
+                IList list_url_lang_framework = carrot.config["list_url_lang_framework"] as IList;
+                this.carrot.Get_Data(this.carrot.random(list_url_lang_framework), Act_sel_lang_done, () =>
                 {
                     this.Select_lang(s_key);
                 });
