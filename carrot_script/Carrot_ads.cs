@@ -108,7 +108,7 @@ namespace Carrot
         public void remove_ads()
         {
             //this.Destroy_Banner_Ad();
-           // this.Destroy_Interstitial_Ad();
+            //this.Destroy_Interstitial_Ad();
             PlayerPrefs.SetInt("is_ads", 1);
             this.is_ads = false;
             this.Set_enable_all_emp_btn_removeads(this.is_ads);
