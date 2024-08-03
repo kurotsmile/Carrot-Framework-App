@@ -599,10 +599,13 @@ namespace Carrot
             if (this.is_ready)
                 this.lang.Show_list_lang(call_func);
             else
+            {
+                this.stop_all_act();
                 this.Get_Config(() =>
                 {
                     this.Show_list_lang(call_func);
                 });
+            }
         }
 
         public void buy_product(int index)
