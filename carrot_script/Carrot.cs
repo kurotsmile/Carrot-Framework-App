@@ -201,6 +201,7 @@ namespace Carrot
         private UnityAction act_result_msg_config;
         private bool is_ready = false;
         public IDictionary config;
+        private int count_check_host = 0;
         
         public void Load_Carrot()
         {
@@ -247,9 +248,14 @@ namespace Carrot
                 this.config = Json.Deserialize(data) as IDictionary;
                 this.is_ready = true;
                 act_done?.Invoke();
+                this.count_check_host = 0;
             }, () =>
             {
-                this.Get_Config(act_done);
+                this.count_check_host++;
+                if (this.count_check_host >= 4)
+                    this.count_check_host = 0;
+                else
+                    this.Get_Config(act_done);
             });
         }
 
