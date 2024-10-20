@@ -213,7 +213,7 @@ namespace Carrot
             this.lang.On_load(this);
             this.user.On_load(this);
             this.camera_pro.On_load();
-            this.shop.On_load(this);
+            if(this.index_inapp_remove_ads!=-1||this.index_inapp_buy_bk_music!=-1) this.shop.On_load(this);
             this.shop.onCarrotPaySuccess += this.carrot_by_success;
             this.shop.onCarrotRestoreSuccess += this.carrot_restore_success;
             this.ads.On_load(this);
