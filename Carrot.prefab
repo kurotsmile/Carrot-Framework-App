@@ -43,6 +43,7 @@ AudioSource:
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 0}
   m_audioClip: {fileID: 0}
+  m_Resource: {fileID: 0}
   m_PlayOnAwake: 0
   m_Volume: 1
   m_Pitch: 1
@@ -171,6 +172,7 @@ AudioSource:
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 0}
   m_audioClip: {fileID: 8300000, guid: b946c0e1344876d4d83aace333c03774, type: 3}
+  m_Resource: {fileID: 8300000, guid: b946c0e1344876d4d83aace333c03774, type: 3}
   m_PlayOnAwake: 0
   m_Volume: 1
   m_Pitch: 1
@@ -269,7 +271,6 @@ GameObject:
   - component: {fileID: 292901969}
   - component: {fileID: 1069686049}
   - component: {fileID: 4614701476662799586}
-  - component: {fileID: 1438298178766269817}
   - component: {fileID: 4645516730937484055}
   - component: {fileID: 1244711569507986795}
   - component: {fileID: 3353702974751351471}
@@ -317,13 +318,7 @@ MonoBehaviour:
   list_url_config:
   - https://raw.githubusercontent.com/kurotsmile/Database-Store-Json/main/config/carrot_framework_config.json
   - https://www.googleapis.com/drive/v3/files/164HKCBnFqiHlvQyTdn5bVN1xbKVrjUXB?alt=media&key=AIzaSyDKcjH_bDJz3EcqPdV5i62IZNVQ6EkyOFg
-  list_url_country:
-  - https://raw.githubusercontent.com/kurotsmile/Database-Store-Json/main/lang.json
-  - https://www.googleapis.com/drive/v3/files/1TUObqv-6R0Vp7dfmNekijZB61o_HqZQp?alt=media&key=AIzaSyDKcjH_bDJz3EcqPdV5i62IZNVQ6EkyOFg
   list_url_lang_app: []
-  list_url_lang_framework:
-  - https://raw.githubusercontent.com/kurotsmile/Database-Store-Json/main/lang_app/carrot_framework_unity.json
-  - https://www.googleapis.com/drive/v3/files/12kzpwaU5JH0ZgWk9PSugccox-j--BPkh?alt=media&key=AIzaSyDKcjH_bDJz3EcqPdV5i62IZNVQ6EkyOFg
   model_app: 1
   os_app: 0
   store_public: 0
@@ -349,27 +344,9 @@ MonoBehaviour:
   setting_vibrate: 1
   setting_soundtrack: 1
   setting_theme: 1
-  click_show_ads: 5
-  emp_btn_remove_ads: []
-  id_ads_Interstitial_android: 
-  id_ads_Banner_android: 
-  id_ads_Rewarded_android: 
-  id_ads_Interstitial_ios: 
-  id_ads_Banner_ios: 
-  id_ads_Rewarded_ios: 
-  ads_uniy_test_mode: 0
-  id_ads_unity_App_android: 
-  id_ads_unity_Interstitial_android: 
-  id_ads_unity_Banner_android: 
-  id_ads_unity_Rewarded_android: 
-  id_ads_unity_App_ios: 
-  id_ads_unity_Interstitial_ios: 
-  id_ads_unity_Banner_ios: 
-  id_ads_unity_Rewarded_ios: 
   lang: {fileID: 292901969}
   user: {fileID: 4645516730937484055}
   shop: {fileID: 1069686049}
-  ads: {fileID: 1438298178766269817}
   game: {fileID: 4614701476662799586}
   camera_pro: {fileID: 1244711569507986795}
   location: {fileID: 3353702974751351471}
@@ -500,19 +477,6 @@ MonoBehaviour:
   - {fileID: 1115052144, guid: 55e90c267e0fdd34c95f0298c27c873f, type: 3}
   - {fileID: 1611117314, guid: 55e90c267e0fdd34c95f0298c27c873f, type: 3}
   - {fileID: -696598731, guid: 55e90c267e0fdd34c95f0298c27c873f, type: 3}
---- !u!114 &1438298178766269817
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5170736565810424376}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2243a549f9620c7419f374fbd545d2e8, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  window_ads_prefab: {fileID: 7528647998446531272, guid: b8f60ea6adef9c746baa8327ecef6318, type: 3}
 --- !u!114 &4645516730937484055
 MonoBehaviour:
   m_ObjectHideFlags: 0

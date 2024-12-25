@@ -70,8 +70,6 @@ namespace Carrot
                 item_color.set_tip(color_mix.ToString()+" - #"+ColorUtility.ToHtmlStringRGBA(color_mix));
                 item_color.img_icon.color = color_mix;
 
-                if (this.carrot.ads.get_status_ads())
-                {
                     if (i % 2 == 0)
                     {
                         Carrot_Box_Btn_Item btn_watch_ads = item_color.create_item();
@@ -84,11 +82,7 @@ namespace Carrot
                     {
                         item_color.set_act(() => Act_select_color_item(c));
                     }
-                }
-                else
-                {
-                    item_color.set_act(() => Act_select_color_item(c));
-                }
+
             }
             return box_list;
         }
@@ -135,7 +129,6 @@ namespace Carrot
 
         private void Act_watch_ads_get_color(Color32 color_new)
         {
-            this.carrot.ads.show_ads_Rewarded();
             this.is_ads_rewarded = true;
             this.color_ads_rewarded = color_new;
         }

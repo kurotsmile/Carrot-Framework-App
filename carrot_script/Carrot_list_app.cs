@@ -7,6 +7,7 @@ namespace Carrot
     public enum Carrot_app_type { all, app, game }
     public class Carrot_list_app
     {
+        public string url_data="https://raw.githubusercontent.com/kurotsmile/Database-Store-Json/refs/heads/main/app.json";
         private Carrot carrot;
 
         private Carrot_Box box_list_app;
@@ -62,13 +63,9 @@ namespace Carrot
             if (this.type == Carrot_app_type.all)
             {
                 if (this.s_data_carrotapp_all == "")
-                {
-                    this.carrot.server.Get_doc(this.Get_Query().ToJson(), get_data_app_done, get_data_app_fail);
-                }
+                    this.carrot.Get_Data(this.url_data,load_list_by_data);
                 else
-                {
                     this.load_list_by_data(this.s_data_carrotapp_all);
-                }
             }
 
             if (this.type == Carrot_app_type.app)
@@ -95,7 +92,6 @@ namespace Carrot
                 {
                     this.load_list_by_data(this.s_data_carrotapp_game);
                 }
-
             }
         }
 
@@ -140,24 +136,14 @@ namespace Carrot
 
         private void load_list_by_data(string s_data)
         {
-            Fire_Collection fc = new(s_data);
-            if (!fc.is_null)
-            {
+            IDictionary data=(IDictionary)Json.Deserialize(s_data);
+
                 create_list_box_app();
 
-                IList<IDictionary> list_app = new List<IDictionary>();
+                IList all_item = data["all_item"] as IList;
 
-                for (int i = 0; i < fc.fire_document.Length; i++)
-                {
-                    list_app.Add(fc.fire_document[i].Get_IDictionary());
-                }
 
-                list_app = this.carrot.get_tool().Shuffle_Ilist(list_app);
-
-                for (int i = 0; i < list_app.Count; i++)
-                {
-                    add_item_to_list_box(list_app[i]);
-                }
+                for (int i = 0; i < all_item.Count; i++) add_item_to_list_box((IDictionary)all_item[i]);
 
                 if (this.carrot.type_control != TypeControl.None)
                 {
@@ -167,7 +153,6 @@ namespace Carrot
                     this.carrot.game.set_index_button_gamepad_console(3);
                     this.carrot.game.set_scrollRect_gamepad_consoles(this.box_list_app.UI.scrollRect);
                 }
-            }
         }
 
         private void create_list_box_app()
@@ -195,7 +180,7 @@ namespace Carrot
         {
             string s_key_lang = this.carrot.lang.Get_key_lang();
             string s_key_store_public = this.carrot.store_public.ToString().ToLower();
-            string s_id_app = data_item["id"].ToString();
+            string s_id_app = data_item["id_import"].ToString();
             Carrot_Box_Item item_app = box_list_app.create_item(s_id_app);
 
             string s_name = "";
@@ -254,13 +239,9 @@ namespace Carrot
             if (this.type == Carrot_app_type.all)
             {
                 if (this.s_data_carrotapp_all == "")
-                {
-                    this.carrot.server.Get_doc(this.Get_Query().ToJson(), get_data_app_exit_done, get_data_app_exit_fail);
-                }
+                    this.carrot.Get_Data(this.url_data,get_data_app_exit_done);
                 else
-                {
                     this.Act_load_app_where_exit_by_data(this.s_data_carrotapp_all);
-                }
             }
 
             if (this.type == Carrot_app_type.app)

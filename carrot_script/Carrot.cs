@@ -77,40 +77,10 @@ namespace Carrot
         public Setting_Option setting_soundtrack = Setting_Option.Hide;
         public Setting_Option setting_theme = Setting_Option.Hide;
 
-        [Header("Ads Config")]
-        public int click_show_ads = 5;
-        public GameObject[] emp_btn_remove_ads;
-
-        [Header("Admob Ads Android config")]
-        public string id_ads_Interstitial_android;
-        public string id_ads_Banner_android;
-        public string id_ads_Rewarded_android;
-
-        [Header("Admob Ads Ios config")]
-        public string id_ads_Interstitial_ios = "unused";
-        public string id_ads_Banner_ios = "unused";
-        public string id_ads_Rewarded_ios = "unused";
-
-        [Header("Unity Ads")]
-        public bool ads_uniy_test_mode;
-
-        [Header("Unity Ads Android config")]
-        public string id_ads_unity_App_android;
-        public string id_ads_unity_Interstitial_android;
-        public string id_ads_unity_Banner_android;
-        public string id_ads_unity_Rewarded_android;
-
-        [Header("Unity Ads Ios config")]
-        public string id_ads_unity_App_ios;
-        public string id_ads_unity_Interstitial_ios;
-        public string id_ads_unity_Banner_ios;
-        public string id_ads_unity_Rewarded_ios;
-
         [Header("Carrot Obj")]
         public Carrot_lang lang;
         public Carrot_User user;
         public Carrot_shop shop;
-        public Carrot_ads ads;
         public Carrot_game game;
         public Carrot_camera camera_pro;
         public Carrot_location location;
@@ -216,12 +186,9 @@ namespace Carrot
             if(this.index_inapp_remove_ads!=-1||this.index_inapp_buy_bk_music!=-1) this.shop.On_load(this);
             this.shop.onCarrotPaySuccess += this.carrot_by_success;
             this.shop.onCarrotRestoreSuccess += this.carrot_restore_success;
-            this.ads.On_load(this);
+
             this.theme.On_load(this);
             fullscreenToggle = Screen.fullScreen;
-
-            if (this.type_app == TypeApp.Game) this.ads.onRewardedSuccess += this.game.OnRewardedSuccess;
-            this.ads.onRewardedSuccess += this.theme.OnRewardedSuccess;
 
             this.carrot_list_app = new Carrot_list_app(this);
             this.list_Window = new List<GameObject>();
@@ -833,8 +800,8 @@ namespace Carrot
                 this.item_setting_ads.set_lang_data("remove_ads", "remove_ads_tip");
                 this.item_setting_ads.set_act(this.buy_inapp_removeads);
 
-                if (this.ads.get_status_ads()) this.item_setting_ads.gameObject.SetActive(true);
-                else this.item_setting_ads.gameObject.SetActive(false);
+                this.item_setting_ads.gameObject.SetActive(true);
+                //else this.item_setting_ads.gameObject.SetActive(false);
             }
 
 
@@ -946,11 +913,6 @@ namespace Carrot
                 btn_dev_info.set_icon(user.icon_user_info);
                 btn_dev_info.set_color(this.color_highlight);
                 btn_dev_info.set_act(() => Show_box_dev_info());
-
-                Carrot_Box_Btn_Item btn_dev_ads = item_setting_bug.create_item();
-                btn_dev_ads.set_icon(icon_carrot_ads);
-                btn_dev_ads.set_color(this.color_highlight);
-                btn_dev_ads.set_act(() => ads.Show_box_dev_test());
             }
 
             if (this.os_app == OS.Window)
@@ -1246,7 +1208,6 @@ namespace Carrot
         private void in_app_remove_ads()
         {
             if (item_setting_ads) Destroy(item_setting_ads.gameObject);
-            this.ads.remove_ads();
             this.Show_msg(lang.Val("shop", "Shop"), lang.Val("ads_remove_success", "Ad removal successful!"), Msg_Icon.Success);
         }
 
@@ -1311,13 +1272,11 @@ namespace Carrot
             {
                 this.box_setting.set_icon(this.sp_icon_dev);
                 this.model_app = ModelApp.Develope;
-                this.ads.set_status_ads(false);
             }
             else
             {
                 this.box_setting.set_icon(this.sp_icon_setting);
                 this.model_app = ModelApp.Publish;
-                this.ads.set_status_ads(true);
             }
             this.Show_msg("Change Model App Success!!!", this.model_app.ToString(), Msg_Icon.Success);
         }

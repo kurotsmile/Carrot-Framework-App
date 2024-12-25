@@ -164,13 +164,10 @@ namespace Carrot
 
                         if (carrot.os_app != OS.Window)
                         {
-                            if (this.carrot.id_ads_Rewarded_android != "" || this.carrot.id_ads_Rewarded_ios != "")
-                            {
-                                Carrot_Box_Btn_Item btn_ads = item_music_bk.create_item();
-                                btn_ads.set_icon(this.carrot.icon_carrot_ads);
-                                btn_ads.set_color(this.carrot.color_highlight);
-                                btn_ads.set_act(() => this.act_watch_ads_to_music_bk(id_bk_music, index_link));
-                            }
+                            Carrot_Box_Btn_Item btn_ads = item_music_bk.create_item();
+                            btn_ads.set_icon(this.carrot.icon_carrot_ads);
+                            btn_ads.set_color(this.carrot.color_highlight);
+                            btn_ads.set_act(() => this.act_watch_ads_to_music_bk(id_bk_music, index_link));
                         }
                     }
                     else
@@ -255,7 +252,6 @@ namespace Carrot
         {
             this.id_buy_bk_music_temp = id_bk_music;
             this.index_buy_music_link_temp = index_link;
-            this.carrot.ads.show_ads_Rewarded();
         }
 
         private void act_cancel_play_music()
