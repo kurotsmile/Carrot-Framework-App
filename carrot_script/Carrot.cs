@@ -16,7 +16,6 @@ namespace Carrot
     public enum Store { Google_Play, Samsung_Galaxy_Store, Microsoft_Store, Amazon_app_store, Carrot_store, Huawei_store, Itch,Uptodown};
     public enum TypeApp { App, Game }
     public enum TypeRate { Market_Android, Ms_Windows_Store, Amazon_app_store, Link_Share_CarrotApp }
-    public enum TypeAds {Admod_Unity_Carrot,Unity_Admob_Carrot, Carrot}
     public enum TypeControl { None, GamePad, D_pad }
     public enum Setting_Option { Show, Hide }
 
@@ -39,7 +38,6 @@ namespace Carrot
         public TypeApp type_app;
         public PayApp pay_app;
         public TypeRate type_rate;
-        public TypeAds type_ads;
         public TypeControl type_control;
         public string WindowUWP_ProductId;
         public string Carrotstore_AppId;
@@ -1331,7 +1329,6 @@ namespace Carrot
         {
             this.store_public = Store.Google_Play;
             this.os_app = OS.Android;
-            this.type_ads = TypeAds.Admod_Unity_Carrot;
             this.type_rate = TypeRate.Market_Android;
             this.pay_app = PayApp.UnitySDKPay;
         }
@@ -1341,7 +1338,6 @@ namespace Carrot
         {
             this.store_public = Store.Amazon_app_store;
             this.os_app = OS.Android;
-            this.type_ads = TypeAds.Admod_Unity_Carrot;
             this.type_rate = TypeRate.Amazon_app_store;
             this.pay_app = PayApp.UnitySDKPay;
         }
@@ -1351,7 +1347,6 @@ namespace Carrot
         {
             this.store_public = Store.Huawei_store;
             this.os_app = OS.Android;
-            this.type_ads = TypeAds.Admod_Unity_Carrot;
             this.type_rate = TypeRate.Market_Android;
             this.pay_app = PayApp.CarrotPay;
         }
@@ -1361,7 +1356,6 @@ namespace Carrot
         {
             this.store_public = Store.Uptodown;
             this.os_app = OS.Android;
-            this.type_ads = TypeAds.Admod_Unity_Carrot;
             this.type_rate = TypeRate.Market_Android;
             this.pay_app = PayApp.CarrotPay;
         }
@@ -1374,7 +1368,6 @@ namespace Carrot
 #endif
             this.store_public = Store.Microsoft_Store;
             this.os_app = OS.Window;
-            this.type_ads = TypeAds.Carrot;
             this.type_rate = TypeRate.Ms_Windows_Store;
             this.pay_app = PayApp.UnitySDKPay;
         }
@@ -1384,7 +1377,6 @@ namespace Carrot
         {
             this.store_public = Store.Itch;
             this.os_app = OS.Android;
-            this.type_ads = TypeAds.Admod_Unity_Carrot;
             this.type_rate = TypeRate.Market_Android;
             this.pay_app = PayApp.CarrotPay;
         }
@@ -1394,7 +1386,6 @@ namespace Carrot
         {
             this.store_public = Store.Itch;
             this.os_app = OS.Ios;
-            this.type_ads = TypeAds.Admod_Unity_Carrot;
             this.type_rate = TypeRate.Market_Android;
             this.pay_app = PayApp.CarrotPay;
         }
@@ -1409,7 +1400,6 @@ namespace Carrot
 
             this.store_public = Store.Itch;
             this.os_app = OS.Web;
-            this.type_ads = TypeAds.Carrot;
             this.type_rate = TypeRate.Ms_Windows_Store;
             this.pay_app = PayApp.CarrotPay;
         }
@@ -1424,7 +1414,6 @@ namespace Carrot
 #endif
             this.store_public = Store.Itch;
             this.os_app = OS.Window;
-            this.type_ads = TypeAds.Carrot;
             this.type_rate = TypeRate.Ms_Windows_Store;
             this.pay_app = PayApp.CarrotPay;
         }
