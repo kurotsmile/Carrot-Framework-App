@@ -214,7 +214,7 @@ namespace Carrot
                 this.is_ready = true;
                 act_done?.Invoke();
                 this.count_check_host = 0;
-            }, () =>
+            }, (s_error) =>
             {
                 this.count_check_host++;
                 if (this.count_check_host >= 4)
@@ -1428,33 +1428,31 @@ namespace Carrot
             return list[Random.Range(0, list.Count)].ToString();
         }
 
-        public void Get_Data(string url, UnityAction<string> done_act, UnityAction fail_act=null)
+        public void Get_Data(string url, UnityAction<string> done_act, UnityAction<string> fail_act=null)
         {
             StartCoroutine(this.LoadData(url, done_act, fail_act));
         }
 
-        private IEnumerator LoadData(string url, UnityAction<string> done_act, UnityAction fail_act=null)
+        private IEnumerator LoadData(string url, UnityAction<string> done_act, UnityAction<string> fail_act=null)
         {
-            using (UnityWebRequest www = UnityWebRequest.Get(url))
+            using UnityWebRequest www = UnityWebRequest.Get(url);
+            www.SendWebRequest();
+
+            while (!www.isDone)
             {
-                www.SendWebRequest();
+                float progress = www.downloadProgress;
+                //Debug.Log($"Download: {progress * 100}%");
+                yield return null;
+            }
 
-                while (!www.isDone)
-                {
-                    float progress = www.downloadProgress;
-                    //Debug.Log($"Download: {progress * 100}%");
-                    yield return null;
-                }
-
-                if (www.result != UnityWebRequest.Result.Success)
-                {
-                    fail_act?.Invoke();
-                }
-                else
-                {
-                    string jsonData = www.downloadHandler.text;
-                    done_act?.Invoke(jsonData);
-                }
+            if (www.result != UnityWebRequest.Result.Success)
+            {
+                fail_act?.Invoke(www.error);
+            }
+            else
+            {
+                string jsonData = www.downloadHandler.text;
+                done_act?.Invoke(jsonData);
             }
         }
     }

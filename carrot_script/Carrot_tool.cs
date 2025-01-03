@@ -346,5 +346,19 @@ namespace Carrot
             }
             return list;
         }
+
+        public IList Shuffle_Ilist(IList list)
+        {
+            System.Random rng = new System.Random();
+            for (int i = list.Count - 1; i > 0; i--)
+            {
+                int j = rng.Next(0, i + 1);
+                var temp = list[i];
+                list[i] = list[j];
+                list[j] = temp;
+            }
+            return list;
+        }
+
     }
 }

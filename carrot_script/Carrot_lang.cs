@@ -63,7 +63,9 @@ namespace Carrot
             if (this.s_data_json_list_lang_offline == "")
             {
                 IList list_url_country = carrot.config["list_url_country"] as IList;
-                this.carrot.Get_Data(carrot.random(list_url_country), this.Get_doc_done, this.Show_list_lang);
+                this.carrot.Get_Data(carrot.random(list_url_country), this.Get_doc_done, (s_error)=>{
+                    this.Show_list_lang();
+                });
             }
             else
                 this.Load_list_lang_by_data(this.s_data_json_list_lang_offline);
@@ -185,7 +187,7 @@ namespace Carrot
                 this.carrot.show_loading();
                 this.s_key_lang_temp = s_key;
                 IList list_url_lang_framework = carrot.config["list_url_lang_framework"] as IList;
-                this.carrot.Get_Data(this.carrot.random(list_url_lang_framework), Act_sel_lang_done, () =>
+                this.carrot.Get_Data(this.carrot.random(list_url_lang_framework), Act_sel_lang_done, (s_error) =>
                 {
                     this.Select_lang(s_key);
                 });
@@ -217,10 +219,7 @@ namespace Carrot
                     this.data_lang_offline["lang_data_" + this.s_key_lang_temp] = s_data_json;
                     PlayerPrefs.SetString("db_lang_value_" + this.s_key_lang_temp, s_data_json);
                     this.Change_lang(this.s_key_lang_temp);
-                }, () =>
-                {
-                    this.Act_sel_lang_done(s_data);
-                });
+                }, (s_error) =>{this.Act_sel_lang_done(s_data);});
             }
             else
             {

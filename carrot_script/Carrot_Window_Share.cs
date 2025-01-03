@@ -13,7 +13,7 @@ namespace Carrot
         public InputField inp_link_share;
         public Transform area_all_item_share;
         public GameObject box_btn_item_prefab;
-
+        private string s_url_data = "https://raw.githubusercontent.com/kurotsmile/Database-Store-Json/refs/heads/main/share.json";
         private string s_data_json_share_offline = "";
 
         public void Load(Carrot carrot)
@@ -38,19 +38,13 @@ namespace Carrot
         private void Get_and_load_list_share()
         {
             if (this.s_data_json_share_offline == "")
-            {
-                StructuredQuery q = new("share");
-                this.carrot.server.Get_doc(q.ToJson(), Get_list_share_done, Get_list_share_fail);
-            }
+                this.carrot.Get_Data(this.s_url_data, (s_data) =>{
+                    this.s_data_json_share_offline = s_data;
+                    PlayerPrefs.SetString("s_data_json_share_offline", s_data);
+                    this.Load_list_share(s_data);
+                }, Get_list_share_fail);
             else
                 this.Load_list_share(s_data_json_share_offline);
-        }
-
-        private void Get_list_share_done(string s_data)
-        {
-            PlayerPrefs.SetString("s_data_json_share_offline", s_data);
-            this.s_data_json_share_offline = s_data;
-            this.Load_list_share(s_data);
         }
 
         private void Get_list_share_fail(string s_error)
@@ -71,31 +65,30 @@ namespace Carrot
 
         private void Load_list_share(string s_data)
         {
-            Fire_Collection fc = new(s_data);
-            if (!fc.is_null)
+            IDictionary data = Json.Deserialize(s_data) as IDictionary;
+            IList list_share = data["all_item"] as IList;
+
+            string s_os_app = this.carrot.os_app.ToString().ToLower();
+            for (int i = 0; i < list_share.Count; i++)
             {
-                string s_os_app = this.carrot.os_app.ToString().ToLower();
-                for (int i = 0; i < fc.fire_document.Length; i++)
-                {
-                    IDictionary data_share = fc.fire_document[i].Get_IDictionary();
-                    string s_id_share = data_share["id"].ToString();
-                    data_share["id"] = s_id_share;
-                    Carrot_Box_Btn_Item btn_share_item = Create_btn();
-                    btn_share_item.set_icon(this.carrot.sp_icon_share);
-                    string s_link_share = "";
-                    if (data_share[s_os_app] != null) s_link_share = data_share[s_os_app].ToString();
-                    if (s_link_share == "") s_link_share = data_share["window"].ToString();
+                IDictionary data_share = list_share[i] as IDictionary;
+                string s_id_share = data_share["id_import"].ToString();
+                data_share["id"] = s_id_share;
+                Carrot_Box_Btn_Item btn_share_item = Create_btn();
+                btn_share_item.set_icon(this.carrot.sp_icon_share);
+                string s_link_share = "";
+                if (data_share[s_os_app] != null) s_link_share = data_share[s_os_app].ToString();
+                if (s_link_share == "") s_link_share = data_share["window"].ToString();
 
-                    s_id_share = "share_" + s_id_share;
-                    Sprite sp_icon_share = this.carrot.get_tool().get_sprite_to_playerPrefs(s_id_share);
-                    if (sp_icon_share != null)
-                        btn_share_item.set_icon(sp_icon_share);
-                    else
-                        this.carrot.get_img_and_save_playerPrefs(data_share["icon"].ToString(), btn_share_item.icon, s_id_share);
+                s_id_share = "share_" + s_id_share;
+                Sprite sp_icon_share = this.carrot.get_tool().get_sprite_to_playerPrefs(s_id_share);
+                if (sp_icon_share != null)
+                    btn_share_item.set_icon(sp_icon_share);
+                else
+                    this.carrot.get_img_and_save_playerPrefs(data_share["icon"].ToString(), btn_share_item.icon, s_id_share);
 
-                    if (s_link_share != "") btn_share_item.set_act(() => act_click_btn_share(s_link_share));
-                };
-            }
+                if (s_link_share != "") btn_share_item.set_act(() => act_click_btn_share(s_link_share));
+            };
         }
 
         private void act_click_btn_share(string url)

@@ -7,7 +7,7 @@ namespace Carrot
     public enum Carrot_app_type { all, app, game }
     public class Carrot_list_app
     {
-        public string url_data="https://raw.githubusercontent.com/kurotsmile/Database-Store-Json/refs/heads/main/app.json";
+        public string url_data = "https://raw.githubusercontent.com/kurotsmile/Database-Store-Json/refs/heads/main/app.json";
         private Carrot carrot;
 
         private Carrot_Box box_list_app;
@@ -21,38 +21,11 @@ namespace Carrot
         private Carrot_app_type type = Carrot_app_type.all;
 
         private string s_data_carrotapp_all = "";
-        private string s_data_carrotapp_app = "";
-        private string s_data_carrotapp_game = "";
 
         public Carrot_list_app(Carrot carrot)
         {
             this.carrot = carrot;
-
-            if (this.carrot.is_offline())
-            {
-                this.s_data_carrotapp_all = PlayerPrefs.GetString("s_data_carrotapp_all");
-                this.s_data_carrotapp_app = PlayerPrefs.GetString("s_data_carrotapp_app");
-                this.s_data_carrotapp_game = PlayerPrefs.GetString("s_data_carrotapp_game");
-            }
-        }
-
-        private StructuredQuery Get_Query()
-        {
-            StructuredQuery q = new("app");
-            q.Add_select("name_" + this.carrot.lang.Get_key_lang());
-            q.Add_select("name_en");
-            q.Add_select("uptodown");
-            q.Add_select("icon");
-            q.Add_select("type");
-            q.Add_select("amazon_app_store");
-            q.Add_select("google_play");
-            q.Add_select("huawei_store");
-            q.Add_select("itch");
-            q.Add_select("microsoft_store");
-            q.Add_select("uptodown");
-            q.Set_limit(20);
-            q.Add_where("status", Query_OP.EQUAL, "publish");
-            return q;
+            if (this.carrot.is_offline()) this.s_data_carrotapp_all = PlayerPrefs.GetString("s_data_carrotapp_all");
         }
 
         [ContextMenu("show_list_carrot_app")]
@@ -60,99 +33,40 @@ namespace Carrot
         {
             this.carrot.play_sound_click();
             this.carrot.show_loading();
-            if (this.type == Carrot_app_type.all)
-            {
-                if (this.s_data_carrotapp_all == "")
-                    this.carrot.Get_Data(this.url_data,load_list_by_data);
-                else
-                    this.load_list_by_data(this.s_data_carrotapp_all);
-            }
-
-            if (this.type == Carrot_app_type.app)
-            {
-                if (this.s_data_carrotapp_app == "")
-                {
-                    StructuredQuery q = this.Get_Query();
-                    q.Add_where("type", Query_OP.EQUAL, "app");
-                    this.carrot.server.Get_doc(q.ToJson(), get_data_app_done, get_data_app_fail);
-                }
-                else
-                    this.load_list_by_data(this.s_data_carrotapp_app);
-            }
-
-            if (this.type == Carrot_app_type.game)
-            {
-                if (this.s_data_carrotapp_game == "")
-                {
-                    StructuredQuery q = this.Get_Query();
-                    q.Add_where("type", Query_OP.EQUAL, "game");
-                    this.carrot.server.Get_doc(q.ToJson(), get_data_app_done, get_data_app_fail);
-                }
-                else
-                {
-                    this.load_list_by_data(this.s_data_carrotapp_game);
-                }
-            }
-        }
-
-        private void get_data_app_done(string s_data)
-        {
-            if (this.type == Carrot_app_type.all)
-            {
-                this.s_data_carrotapp_all = s_data;
-                PlayerPrefs.SetString("s_data_carrotapp_all", this.s_data_carrotapp_all);
-            }
-
-            if (this.type == Carrot_app_type.app)
-            {
-                this.s_data_carrotapp_app = s_data;
-                PlayerPrefs.SetString("s_data_carrotapp_app", this.s_data_carrotapp_app);
-            }
-
-            if (this.type == Carrot_app_type.game)
-            {
-                this.s_data_carrotapp_game = s_data;
-                PlayerPrefs.SetString("s_data_carrotapp_game", this.s_data_carrotapp_game);
-            }
-
-            this.load_list_by_data(s_data);
-        }
-
-        private void get_data_app_fail(string s_error)
-        {
-            if (this.type == Carrot_app_type.all)
-            {
-                if (this.s_data_carrotapp_all != "") this.load_list_by_data(this.s_data_carrotapp_all);
-            }
-            if (this.type == Carrot_app_type.app)
-            {
-                if (this.s_data_carrotapp_app != "") this.load_list_by_data(this.s_data_carrotapp_app);
-            }
-            if (this.type == Carrot_app_type.game)
-            {
-                if (this.s_data_carrotapp_game != "") this.load_list_by_data(this.s_data_carrotapp_game);
-            }
+            if (this.s_data_carrotapp_all == ""){
+                this.carrot.Get_Data(this.url_data, (s_data)=>{
+                    Debug.Log("Get new Data list app");
+                    this.s_data_carrotapp_all=s_data;
+                    load_list_by_data(s_data);
+                },get_data_app_exit_fail);
+            }else{
+                Debug.Log("Load list app from cache");
+                this.load_list_by_data(this.s_data_carrotapp_all);
+            }            
         }
 
         private void load_list_by_data(string s_data)
         {
-            IDictionary data=(IDictionary)Json.Deserialize(s_data);
+            IDictionary data = (IDictionary)Json.Deserialize(s_data);
+            create_list_box_app();
+            IList all_item = data["all_item"] as IList;
+            this.carrot.get_tool().Shuffle_Ilist(all_item);
+            for (int i = 0; i < all_item.Count; i++)
+            {
+                IDictionary item = all_item[i] as IDictionary;
+                if (this.type == Carrot_app_type.all) add_item_to_list_box(item);
+                else if (this.type == Carrot_app_type.app && item["type"].ToString() == "app") add_item_to_list_box(item);
+                else if (this.type == Carrot_app_type.game && item["type"].ToString() == "game") add_item_to_list_box(item);
+            }
 
-                create_list_box_app();
-
-                IList all_item = data["all_item"] as IList;
-
-
-                for (int i = 0; i < all_item.Count; i++) add_item_to_list_box((IDictionary)all_item[i]);
-
-                if (this.carrot.type_control != TypeControl.None)
-                {
-                    this.carrot.game.set_list_button_gamepad_console(this.list_btn_gamepad);
-                    this.box_list_app.update_gamepad_cosonle_control();
-                    this.box_list_app.update_color_table_row();
-                    this.carrot.game.set_index_button_gamepad_console(3);
-                    this.carrot.game.set_scrollRect_gamepad_consoles(this.box_list_app.UI.scrollRect);
-                }
+            if (this.carrot.type_control != TypeControl.None)
+            {
+                this.carrot.game.set_list_button_gamepad_console(this.list_btn_gamepad);
+                this.box_list_app.update_gamepad_cosonle_control();
+                this.box_list_app.update_color_table_row();
+                this.carrot.game.set_index_button_gamepad_console(3);
+                this.carrot.game.set_scrollRect_gamepad_consoles(this.box_list_app.UI.scrollRect);
+            }
         }
 
         private void create_list_box_app()
@@ -236,112 +150,50 @@ namespace Carrot
             this.window_exit.txt_title_app_other.text = this.carrot.lang.Val("exit_app_other", "Perhaps you will enjoy our other applications");
             this.window_exit.panel_list_app_other.SetActive(false);
 
-            if (this.type == Carrot_app_type.all)
-            {
-                if (this.s_data_carrotapp_all == "")
-                    this.carrot.Get_Data(this.url_data,get_data_app_exit_done);
-                else
-                    this.Act_load_app_where_exit_by_data(this.s_data_carrotapp_all);
-            }
-
-            if (this.type == Carrot_app_type.app)
-            {
-                if (this.s_data_carrotapp_app == "")
-                {
-                    StructuredQuery q = this.Get_Query();
-                    q.Add_where("type", Query_OP.EQUAL, "app");
-                    this.carrot.server.Get_doc(q.ToJson(), get_data_app_exit_done, get_data_app_exit_fail);
-                }
-                else
-                    this.Act_load_app_where_exit_by_data(this.s_data_carrotapp_app);
-            }
-
-            if (this.type == Carrot_app_type.game)
-            {
-                if (this.s_data_carrotapp_game == "")
-                {
-                    StructuredQuery q = this.Get_Query();
-                    q.Add_where("type", Query_OP.EQUAL, "game");
-                    this.carrot.server.Get_doc(q.ToJson(), get_data_app_exit_done, get_data_app_exit_fail);
-                }
-                else
-                    this.Act_load_app_where_exit_by_data(this.s_data_carrotapp_game);
-            }
+            if (this.s_data_carrotapp_all == "")
+                this.carrot.Get_Data(this.url_data, get_data_app_exit_done, get_data_app_exit_fail);
+            else
+                this.Act_load_app_where_exit_by_data(this.s_data_carrotapp_all);
 
             this.window_exit.UI.set_theme(this.carrot.color_highlight);
         }
 
         private void get_data_app_exit_done(string s_data)
         {
-            if (this.type == Carrot_app_type.all)
-            {
-                this.s_data_carrotapp_all = s_data;
-                PlayerPrefs.SetString("s_data_carrotapp_all", this.s_data_carrotapp_all);
-            }
-
-            if (this.type == Carrot_app_type.app)
-            {
-                this.s_data_carrotapp_app = s_data;
-                PlayerPrefs.SetString("s_data_carrotapp_app", this.s_data_carrotapp_app);
-            }
-
-            if (this.type == Carrot_app_type.game)
-            {
-                this.s_data_carrotapp_game = s_data;
-                PlayerPrefs.SetString("s_data_carrotapp_game", this.s_data_carrotapp_game);
-            }
-
+            this.s_data_carrotapp_all = s_data;
             this.Act_load_app_where_exit_by_data(s_data);
         }
 
         private void get_data_app_exit_fail(string s_error)
         {
-            if (this.type == Carrot_app_type.all)
-            {
-                if (this.s_data_carrotapp_all != "") this.Act_load_app_where_exit_by_data(this.s_data_carrotapp_all);
-            }
-            if (this.type == Carrot_app_type.app)
-            {
-                if (this.s_data_carrotapp_app != "") this.Act_load_app_where_exit_by_data(this.s_data_carrotapp_app);
-            }
-            if (this.type == Carrot_app_type.game)
-            {
-                if (this.s_data_carrotapp_game != "") this.Act_load_app_where_exit_by_data(this.s_data_carrotapp_game);
-            }
+            if (this.s_data_carrotapp_all != "") this.Act_load_app_where_exit_by_data(this.s_data_carrotapp_all);
         }
 
         private void Act_load_app_where_exit_by_data(string s_data)
         {
-            Fire_Collection fc = new(s_data);
+            IDictionary data = (IDictionary)Json.Deserialize(s_data);
+            int count_app_exit = 0;
+            this.window_exit.panel_list_app_other.SetActive(true);
 
-            if (!fc.is_null)
+            IList list_app = data["all_item"] as IList;
+
+            for (int i = 0; i < data.Count; i++) list_app.Add(data[i] as IDictionary);
+
+            list_app = this.carrot.get_tool().Shuffle_Ilist(list_app);
+
+            for (int i = 0; i < list_app.Count; i++)
             {
-                int count_app_exit = 0;
-                this.window_exit.panel_list_app_other.SetActive(true);
-
-                IList<IDictionary> list_app = new List<IDictionary>();
-
-                for (int i = 0; i < fc.fire_document.Length; i++)
-                {
-                    list_app.Add(fc.fire_document[i].Get_IDictionary());
-                }
-
-                list_app = this.carrot.get_tool().Shuffle_Ilist(list_app);
-
-                for (int i = 0; i < list_app.Count; i++)
-                {
-                    if (count_app_exit < 10) add_item_app_exit(list_app[i]);
-                    count_app_exit++;
-                }
-
-                this.list_btn_gamepad.Add(this.window_exit.UI.obj_gamepad[0]);
-                this.list_btn_gamepad.Add(this.window_exit.UI.obj_gamepad[1]);
+                if (count_app_exit < 10) Add_item_app_exit(list_app[i] as IDictionary);
+                count_app_exit++;
             }
+
+            this.list_btn_gamepad.Add(this.window_exit.UI.obj_gamepad[0]);
+            this.list_btn_gamepad.Add(this.window_exit.UI.obj_gamepad[1]);
         }
 
-        private void add_item_app_exit(IDictionary data_app_exit)
+        private void Add_item_app_exit(IDictionary data_app_exit)
         {
-            string s_id_app = data_app_exit["id"].ToString();
+            string s_id_app = data_app_exit["name_en"].ToString();
             if (data_app_exit["icon"] != null)
             {
                 var s_store = this.carrot.store_public.ToString().ToLower();
