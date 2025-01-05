@@ -60,6 +60,7 @@ namespace Carrot
         private List<Carrot_Gamepad> list_gamepad;
         private bool is_user_gampad_for_console=true;
         private UnityAction<bool> act_handle_detection = null;
+        public UnityAction act_click_watch_ads_in_music_bk;
 
         [Header("Top player")]
         public Sprite icon_top_player;
@@ -71,7 +72,8 @@ namespace Carrot
         private int rank_type_temp = 0;
         private Carrot_game_rank_order order_top_player = Carrot_game_rank_order.Descending;
         private List<carrot_game_rank_type> list_rank_type;
-
+        private string url_data_audio="https://raw.githubusercontent.com/kurotsmile/Database-Store-Json/refs/heads/main/audio.json";
+        private string s_data_audio="";
         public void Load_carrot_game()
         {
             this.carrot = this.GetComponent<Carrot>();
@@ -95,22 +97,28 @@ namespace Carrot
         {
             this.carrot.show_loading();
             this.box_setting_item_bkmusic = item_setting;
-            StructuredQuery q = new("audio");
-            q.Set_limit(20);
-            this.carrot.server.Get_doc(q.ToJson(), get_list_music_game_done, get_list_music_game_fail);
+            if(this.s_data_audio==""){
+                this.carrot.Get_Data(this.url_data_audio,s_data=>{
+                    this.s_data_audio=s_data;
+                    this.get_list_music_game_done(s_data);
+                },get_list_music_game_fail);
+            }else{
+                this.get_list_music_game_done(this.s_data_audio);
+            }
         }
 
         private void get_list_music_game_done(string s_data)
         {
+            bool is_ads = PlayerPrefs.GetInt("is_ads", 0) == 0;
             this.carrot.hide_loading();
-            Fire_Collection fc = new(s_data);
-            if (!fc.is_null)
+            IDictionary data=Json.Deserialize(s_data) as IDictionary;
+            IList list_audio=data["all_item"] as IList;
+            if (list_audio.Count>0)
             {
                 List<IDictionary> list_music = new();
-                for(int i=0;i<fc.fire_document.Length;i++)
+                for(int i=0;i<list_audio.Count;i++)
                 {
-                    IDictionary audio = fc.fire_document[i].Get_IDictionary();
-                    list_music.Add(audio);
+                    list_music.Add(list_audio[i] as IDictionary);
                 };
                 this.carrot.log("show_list_music_game from server..." + list_music.Count);
 
@@ -164,10 +172,16 @@ namespace Carrot
 
                         if (carrot.os_app != OS.Window)
                         {
-                            Carrot_Box_Btn_Item btn_ads = item_music_bk.create_item();
-                            btn_ads.set_icon(this.carrot.icon_carrot_ads);
-                            btn_ads.set_color(this.carrot.color_highlight);
-                            btn_ads.set_act(() => this.act_watch_ads_to_music_bk(id_bk_music, index_link));
+                            if(is_ads){
+                                Carrot_Box_Btn_Item btn_ads = item_music_bk.create_item();
+                                btn_ads.set_icon(this.carrot.icon_carrot_ads);
+                                btn_ads.set_color(this.carrot.color_highlight);
+                                btn_ads.set_act(() =>{
+                                    this.id_buy_bk_music_temp = id_bk_music;
+                                    this.index_buy_music_link_temp = index_link;
+                                    this.act_click_watch_ads_in_music_bk?.Invoke();
+                                });
+                            }
                         }
                     }
                     else
@@ -246,12 +260,6 @@ namespace Carrot
             this.id_buy_bk_music_temp = id_bk_music;
             this.index_buy_music_link_temp = index_link;
             this.carrot.buy_product(this.carrot.index_inapp_buy_bk_music);
-        }
-
-        private void act_watch_ads_to_music_bk(string id_bk_music, int index_link)
-        {
-            this.id_buy_bk_music_temp = id_bk_music;
-            this.index_buy_music_link_temp = index_link;
         }
 
         private void act_cancel_play_music()

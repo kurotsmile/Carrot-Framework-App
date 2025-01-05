@@ -791,14 +791,15 @@ namespace Carrot
 
             if (this.index_inapp_remove_ads != -1)
             {
-                this.item_setting_ads = box_setting.create_item("remove_ads");
-                this.item_setting_ads.set_icon(this.sp_icon_removeads);
-                this.item_setting_ads.set_title(lang.Val("remove_ads", "Remove Ads"));
-                this.item_setting_ads.set_tip(lang.Val("remove_ads_tip", "Buy and remove advertising function, No ads in the app"));
-                this.item_setting_ads.set_lang_data("remove_ads", "remove_ads_tip");
-                this.item_setting_ads.set_act(this.buy_inapp_removeads);
-
-                this.item_setting_ads.gameObject.SetActive(true);
+                if(PlayerPrefs.GetInt("is_ads",0)==0){
+                    this.item_setting_ads = box_setting.create_item("remove_ads");
+                    this.item_setting_ads.set_icon(this.sp_icon_removeads);
+                    this.item_setting_ads.set_title(lang.Val("remove_ads", "Remove Ads"));
+                    this.item_setting_ads.set_tip(lang.Val("remove_ads_tip", "Buy and remove advertising function, No ads in the app"));
+                    this.item_setting_ads.set_lang_data("remove_ads", "remove_ads_tip");
+                    this.item_setting_ads.set_act(this.buy_inapp_removeads);
+                    this.item_setting_ads.gameObject.SetActive(true);
+                }
                 //else this.item_setting_ads.gameObject.SetActive(false);
             }
 
