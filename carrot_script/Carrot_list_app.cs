@@ -193,6 +193,7 @@ namespace Carrot
 
         private void Add_item_app_exit(IDictionary data_app_exit)
         {
+            if(data_app_exit==null) return;
             if(data_app_exit["name_en"]==null) return;
             string s_id_app = data_app_exit["name_en"].ToString();
             if (data_app_exit["icon"] != null)
