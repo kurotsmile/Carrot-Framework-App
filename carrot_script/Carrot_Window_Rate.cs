@@ -105,23 +105,6 @@ namespace Carrot
             else rates = (IList)Json.Deserialize("[]");
 
             this.index_star_feedback++;
-            Carrot_Rate_data rate = new();
-            rate.comment = this.inp_review_feedback.text;
-            rate.star = this.index_star_feedback.ToString();
-            rate.date = DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ssZ");
-            Carrot_Rate_user_data user_login = new()
-            {
-                name = this.carrot.user.get_data_user_login("name"),
-                id = this.carrot.user.get_id_user_login(),
-                lang = this.carrot.user.get_lang_user_login(),
-                avatar = this.carrot.user.get_data_user_login("avatar")
-            };
-            rate.user = user_login;
-
-            if (this.index_rate_edit != -1)
-                rates[this.index_rate_edit] = rate;
-            else
-                rates.Add(rate);
 
             app["rates"] = rates;
             IDictionary app_data = (IDictionary)Json.Deserialize(JsonConvert.SerializeObject(app));

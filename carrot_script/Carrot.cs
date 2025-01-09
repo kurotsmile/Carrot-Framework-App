@@ -232,8 +232,7 @@ namespace Carrot
 
         public void show_list_carrot_app() { this.carrot_list_app.show_list_carrot_app(); }
         public void clear_contain(Transform area_body) { foreach (Transform child in area_body) { Destroy(child.gameObject); } }
-        public void show_login() { this.user.show_login(); }
-        public void show_user_register() { this.user.show_user_register(); }
+        public async void show_login() { await this.user.Show_loginAsync(); }
         public string L(string s_key, string s_default = ""){ return lang.Val(s_key,s_default); }
         public Carrot_tool get_tool() { return this.tool; }
 
@@ -491,7 +490,6 @@ namespace Carrot
             this.msg = this.Show_msg(L("delete_all_data", "Clear all application data"), L("delete_all_data_tip", "Confirm erase all data and set up") + "?", () =>
             {
                 if (this.msg != null) this.msg.close();
-                this.user.delete_data_user_login();
                 PlayerPrefs.DeleteAll();
                 if (this.type_control != TypeControl.None) game.Destroy_all_gamepad();
                 this.get_tool().delete_file("music_bk");
@@ -775,7 +773,9 @@ namespace Carrot
                 item_setting_top_player.set_icon(this.game.icon_top_player);
                 item_setting_top_player.set_title(lang.Val("top_player", "Player rankings"));
                 item_setting_top_player.set_tip(lang.Val("top_player_tip","User score leaderboard"));
-                item_setting_top_player.set_act(this.game.Show_List_Top_player);
+                item_setting_top_player.set_act(async ()=>{
+                    await this.game.Show_List_Top_player();
+                });
                 item_setting_top_player.set_lang_data("top_player", "top_player_tip");
             }
 
@@ -800,9 +800,7 @@ namespace Carrot
                     this.item_setting_ads.set_act(this.buy_inapp_removeads);
                     this.item_setting_ads.gameObject.SetActive(true);
                 }
-                //else this.item_setting_ads.gameObject.SetActive(false);
             }
-
 
             if (this.index_inapp_buy_bk_music != -1)
             {
@@ -954,7 +952,6 @@ namespace Carrot
 
         public void Reload_setting()
         {
-            if (this.user.get_cur_window_user_login() != null) this.user.get_cur_window_user_login().close();
             if (this.box_setting != null) this.box_setting.close();
             if (this.box_setting.get_act_before_closing() != null)
             {

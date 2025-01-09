@@ -167,13 +167,7 @@ namespace Carrot
             string user_lang = carrot.lang.Get_key_lang();
             string user_name = "";
            
-            if (user_id != "")
-            {
-                user_lang = carrot.user.get_lang_user_login();
-                user_name = carrot.user.get_data_user_login("name");
-            }  
-            else
-                user_id = SystemInfo.deviceUniqueIdentifier;
+            user_id = SystemInfo.deviceUniqueIdentifier;
 
             this.user_id_pay = user_id;
             this.product_id_pay = data_product["id"].ToString();

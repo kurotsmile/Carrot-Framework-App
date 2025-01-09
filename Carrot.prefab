@@ -325,7 +325,6 @@ MonoBehaviour:
   type_app: 0
   pay_app: 0
   type_rate: 0
-  type_ads: 0
   type_control: 0
   WindowUWP_ProductId: 
   Carrotstore_AppId: 
@@ -491,6 +490,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   icon_user_login_true: {fileID: 21300000, guid: 41608187babc5ee4391b9b31bbecbbbc, type: 3}
   icon_user_login_false: {fileID: 21300000, guid: 754b3bab866dcbc4b8db6fa388bf48c3, type: 3}
+  icon_user_anonymous: {fileID: 21300000, guid: fac4ae99ee513ba418c14755acd373f0, type: 3}
   window_login_prefab: {fileID: 7208411555534302970, guid: 97f7a7f0c121e2a43b4194851c8879c5, type: 3}
   list_id_field_advanced:
   - status
