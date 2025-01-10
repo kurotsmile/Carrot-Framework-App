@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.Purchasing;
+using UnityEngine.Purchasing.Extension;
 
 namespace Carrot
 {
@@ -12,7 +13,7 @@ namespace Carrot
         void Carrot_restore_success(string[] arr_id);
     }
 
-    public class Carrot_shop : MonoBehaviour, IStoreListener
+    public class Carrot_shop : MonoBehaviour, IDetailedStoreListener
     {
         IStoreController m_StoreController;
         IExtensionProvider extensions;
@@ -38,12 +39,9 @@ namespace Carrot
             if (this.carrot.pay_app == PayApp.UnitySDKPay)
             {
                 var catalog = ProductCatalog.LoadDefaultCatalog();
-
-
-                var builder = ConfigurationBuilder.Instance(StandardPurchasingModule.Instance());
-
                 if (catalog.allProducts.Count > 0)
                 {
+                    var builder = ConfigurationBuilder.Instance(StandardPurchasingModule.Instance());
                     foreach (var product in catalog.allProducts)
                     {
                         builder.AddProduct(product.id, product.type);
@@ -406,6 +404,11 @@ namespace Carrot
             product_id_pay = "";
             order_type_pay = "";
             order_id_pay = "";
+        }
+
+        public void OnPurchaseFailed(Product product, PurchaseFailureDescription failureDescription)
+        {
+            throw new System.NotImplementedException();
         }
         #endregion
 

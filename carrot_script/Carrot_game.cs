@@ -5,7 +5,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Unity.Services.Authentication;
+using Unity.Services.Authentication.PlayerAccounts;
 using Unity.Services.Leaderboards;
+using Unity.Services.Leaderboards.Models;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.EventSystems;
@@ -70,9 +72,7 @@ namespace Carrot
         public Sprite icon_top_player;
         public GameObject item_top_player_prefab;
         public Sprite[] icon_rank_player;
-        private string s_data_offline_rank_player;
-        private int index_edit_rank = -1;
-        private int rank_scores_temp = 0;
+        private LeaderboardScoresPage scoreResponse = null;
         private int rank_type_temp = 0;
         private Carrot_game_rank_order order_top_player = Carrot_game_rank_order.Descending;
         private List<carrot_game_rank_type> list_rank_type;
@@ -93,7 +93,6 @@ namespace Carrot
             this.color_nomal_item_btn_gamepad = Color.white;
 
             this.list_rank_type = new List<carrot_game_rank_type>();
-            if (this.carrot.is_offline()) this.s_data_offline_rank_player = PlayerPrefs.GetString("s_data_offline_rank_player");
         }
 
         #region Background Music Game
@@ -598,12 +597,31 @@ namespace Carrot
 
         public async Task Show_List_Top_player()
         {
-            this.carrot.show_loading();
-            var scoreResponse = await LeaderboardsService.Instance.GetScoresAsync(this.leaderboardId[0]);
-            Debug.Log(JsonConvert.SerializeObject(scoreResponse));
-            this.s_data_offline_rank_player = JsonConvert.SerializeObject(scoreResponse);
-            PlayerPrefs.SetString("s_data_offline_rank_player", this.s_data_offline_rank_player);
-            this.Act_get_List_Top_player_done(this.s_data_offline_rank_player);
+            if (this.scoreResponse == null)
+            {
+                if (!PlayerAccountService.Instance.IsSignedIn)
+                {
+                    Task task = this.carrot.user.Show_loginAsync(async () =>
+                    {
+                        await Show_List_Top_player();
+                    });
+                }
+                else
+                {
+                    this.carrot.show_loading();
+                    scoreResponse = await LeaderboardsService.Instance.GetScoresAsync(this.leaderboardId[0]);
+
+                    foreach (var result in scoreResponse.Results)
+                    {
+                        Debug.Log($"Player: {result.PlayerName}, Score: {result.Score}, Rank: {result.Rank}");
+                    }
+                    this.Act_get_List_Top_player_done(scoreResponse);
+                }
+            }
+            else
+            {
+                this.Act_get_List_Top_player_done(scoreResponse);
+            }
         }
 
         private async void Act_show_Top_player_by_type(int type)
@@ -612,90 +630,90 @@ namespace Carrot
             await this.Show_List_Top_player();
         }
 
-        private void Act_get_List_Top_player_done(string s_data)
+        private void Act_get_List_Top_player_done(LeaderboardScoresPage scoreResponse)
         {
-            IDictionary ranks=(IDictionary) Json.Deserialize(s_data);
             this.carrot.hide_loading();
-            if (this.box_list != null) this.box_list.close();
-            if (s_data != "")
-            {
-                IList rank = (IList)ranks["results"];
-                box_list = this.carrot.Create_Box();
-                box_list.set_icon(this.icon_top_player);
-                box_list.set_title(this.carrot.lang.Val("top_player", "Player rankings"));
-
-                string id_user_cur = AuthenticationService.Instance.PlayerId;
-
-                IList<IDictionary> list_rank = new List<IDictionary>();
-
-                if (this.list_rank_type.Count > 0)
-                {
-                    Carrot_Box_Btn_Panel panel_type_rank = box_list.create_panel_btn();
-                    for (int i = 0; i < this.list_rank_type.Count; i++)
-                    {
-                        var index = i;
-                        Carrot_Button_Item btn_rank = panel_type_rank.create_btn("btn_rank_" + i);
-                        btn_rank.set_icon_white(this.list_rank_type[i].icon);
-                        btn_rank.set_label(this.list_rank_type[i].s_name);
-                        btn_rank.set_label_color(Color.white);
-                        btn_rank.set_act_click(() => this.Act_show_Top_player_by_type(index));
-                        if (this.rank_type_temp == i)
-                            btn_rank.set_bk_color(this.carrot.color_highlight);
-                        else
-                            btn_rank.set_bk_color(Color.black);
-                    }
-                }
-
-                for (int i = 0; i < rank.Count; i++)
-                {
-                    list_rank.Add((IDictionary)rank[i]);
-                }
-
-                //list_rank=this.SortListByScoresKey(list_rank);
-
-                for (int i = 0; i < list_rank.Count; i++)
-                {
-                    IDictionary data_rank = list_rank[i];
-
-                    var user_id = data_rank["playerId"].ToString();
-                    GameObject obj_item_player_top = Instantiate(this.item_top_player_prefab);
-                    obj_item_player_top.transform.SetParent(box_list.area_all_item);
-                    obj_item_player_top.transform.localPosition = new Vector3(obj_item_player_top.transform.localPosition.x, obj_item_player_top.transform.localPosition.y, 0f);
-                    obj_item_player_top.transform.localScale = new Vector3(1f, 1f, 1f);
-                    obj_item_player_top.transform.localRotation = Quaternion.identity;
-                    Carrot_Item_top_player top_player = obj_item_player_top.GetComponent<Carrot_Item_top_player>();
-                    top_player.txt_user_name.text = data_rank["playerName"].ToString();
-                    top_player.txt_user_scores.text = data_rank["score"].ToString();
-
-                    if (i < this.icon_rank_player.Length)
-                    {
-                        top_player.img_rank.gameObject.SetActive(true);
-                        top_player.img_rank.sprite = this.icon_rank_player[i];
-                    }
-                    else
-                    {
-                        top_player.img_rank.gameObject.SetActive(false);
-                    }
-
-                    if (id_user_cur == user_id)
-                    {
-                        this.index_edit_rank = i;
-                        top_player.GetComponent<Image>().color = this.carrot.get_color_highlight_blur(100);
-                    }
-
-                    top_player.set_act_click(() =>{
-                        
-                    });
-                }
-
-                if (this.carrot.type_app == TypeApp.Game)
-                {
-                    box_list.update_gamepad_cosonle_control();
-                }
-            }
-            else
+            if (scoreResponse == null || scoreResponse.Results == null || scoreResponse.Results.Count == 0)
             {
                 this.carrot.Show_msg(this.carrot.lang.Val("top_player", "Player rankings"), carrot.lang.Val("top_player_none", "No player scores have been ranked yet, log in and play to add points to the rankings!"));
+                return;
+            }
+
+            if(this.box_list != null) this.box_list.close();
+
+            box_list = this.carrot.Create_Box();
+            box_list.set_icon(this.icon_top_player);
+            box_list.set_title(this.carrot.lang.Val("top_player", "Player rankings"));
+
+            string id_user_cur = AuthenticationService.Instance.PlayerId;
+
+            /*
+            IList<IDictionary> list_rank = new List<IDictionary>();
+
+            if (this.list_rank_type.Count > 0)
+            {
+                Carrot_Box_Btn_Panel panel_type_rank = box_list.create_panel_btn();
+                for (int i = 0; i < this.list_rank_type.Count; i++)
+                {
+                    var index = i;
+                    Carrot_Button_Item btn_rank = panel_type_rank.create_btn("btn_rank_" + i);
+                    btn_rank.set_icon_white(this.list_rank_type[i].icon);
+                    btn_rank.set_label(this.list_rank_type[i].s_name);
+                    btn_rank.set_label_color(Color.white);
+                    btn_rank.set_act_click(() => this.Act_show_Top_player_by_type(index));
+                    if (this.rank_type_temp == i)
+                        btn_rank.set_bk_color(this.carrot.color_highlight);
+                    else
+                        btn_rank.set_bk_color(Color.black);
+                }
+            }
+            */
+
+            foreach (var result in scoreResponse.Results)
+            {
+                var user_id = result.PlayerId;
+                Carrot_Box_Item item_p=this.box_list.create_item("item_p");
+                item_p.set_title(result.PlayerName);
+                item_p.set_tip("Score: "+result.Score.ToString());
+                int rank=result.Rank;
+                if (rank < this.icon_rank_player.Length)
+                    item_p.set_icon_white(this.icon_rank_player[rank]);
+                else
+                    item_p.set_icon(this.carrot.user.icon_user_login_false);
+
+                if (id_user_cur == user_id) item_p.GetComponent<Image>().color = this.carrot.get_color_highlight_blur(100);
+
+                item_p.set_act(() =>
+                {
+                    Carrot_Box box_info_player = this.carrot.Create_Box("info_player");
+                    box_info_player.set_icon(this.carrot.user.icon_user_info);
+                    box_info_player.set_title(this.carrot.lang.Val("acc_info", "Account Information"));
+
+                    Carrot_Box_Item info_name = box_info_player.create_item("info_name");
+                    info_name.set_icon(this.carrot.user.icon_user_name);
+                    info_name.set_title("Player Name");
+                    info_name.set_tip(result.PlayerName);
+
+                    Carrot_Box_Item info_date = box_info_player.create_item("info_date");
+                    info_date.set_icon(this.carrot.icon_carrot_game);
+                    info_date.set_title("Score");
+                    info_date.set_tip(result.Score.ToString());
+
+                    Carrot_Box_Item info_rank = box_info_player.create_item("info_rank");
+                    info_rank.set_icon(this.carrot.game.icon_top_player);
+                    info_rank.set_title("Rank");
+                    info_rank.set_tip(result.Rank.ToString());
+
+                    Carrot_Box_Item info_id = box_info_player.create_item("info_id");
+                    info_id.set_icon(this.carrot.icon_carrot_advanced);
+                    info_id.set_title("ID Player");
+                    info_id.set_tip(result.PlayerId);
+                });
+            }
+
+            if (this.carrot.type_app == TypeApp.Game)
+            {
+                box_list.update_gamepad_cosonle_control();
             }
         }
 
@@ -705,12 +723,6 @@ namespace Carrot
                 return list.OrderBy(dict => int.Parse(dict["scores"].ToString())).ToList();
             else
                 return list.OrderByDescending(dict => int.Parse(dict["scores"].ToString())).ToList();
-        }
-
-        private void Act_get_List_Top_player_fail(string s_error)
-        {
-            this.carrot.hide_loading();
-            if (this.s_data_offline_rank_player != "") this.Act_get_List_Top_player_done(this.s_data_offline_rank_player);
         }
 
         public void Set_Order_By_Top_player(Carrot_game_rank_order order)
@@ -727,10 +739,10 @@ namespace Carrot
         public async Task update_scores_playerAsync(int scores, int type = 0)
         {
             this.rank_type_temp = type;
-            this.rank_scores_temp = scores;
             try
             {
                 await LeaderboardsService.Instance.AddPlayerScoreAsync(this.leaderboardId[type], scores);
+                this.scoreResponse=null;
                 Debug.Log($"Điểm số {scores} đã được gửi lên bảng xếp hạng {leaderboardId}.");
             }
             catch (Exception ex)
