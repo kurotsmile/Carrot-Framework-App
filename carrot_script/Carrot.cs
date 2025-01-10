@@ -26,10 +26,7 @@ namespace Carrot
     {
         [Header("Config Server")]
         public string mainhost = "https://carrotstore.web.app";
-        public string key_api_rest_firestore = "";
         public string key_api_google_location_map= "";
-        public string[] list_url_config;
-        public string[] list_url_lang_app;
 
         [Header("Config App")]
         public ModelApp model_app;
@@ -83,7 +80,6 @@ namespace Carrot
         public Carrot_camera camera_pro;
         public Carrot_location location;
         public Carrot_Theme theme;
-        public Carrot_Server server;
 
         [Header("Panel Obj")]
         public GameObject window_msg_prefab;
@@ -169,8 +165,7 @@ namespace Carrot
         private UnityAction act_result_msg_config;
         private bool is_ready = false;
         public IDictionary config;
-        private int count_check_host = 0;
-        
+
         public void Load_Carrot()
         {
             this.list_log = new List<string>();
@@ -202,26 +197,6 @@ namespace Carrot
                 this.is_vibrate = false;
             if (this.check_lost_internet) this.check_connect_internet();
             this.is_ready = true;
-
-            this.Get_Config();
-        }
-
-        private void Get_Config(UnityAction act_done=null)
-        {
-            this.Get_Data(this.random(this.list_url_config), (data) =>
-            {
-                this.config = Json.Deserialize(data) as IDictionary;
-                this.is_ready = true;
-                act_done?.Invoke();
-                this.count_check_host = 0;
-            }, (s_error) =>
-            {
-                this.count_check_host++;
-                if (this.count_check_host >= 4)
-                    this.count_check_host = 0;
-                else
-                    this.Get_Config(act_done);
-            });
         }
 
         public void Load_Carrot(UnityAction act_check_exit_app)
@@ -565,16 +540,7 @@ namespace Carrot
 
         public void Show_list_lang(UnityAction<string> call_func)
         {
-            if (this.is_ready)
-                this.lang.Show_list_lang(call_func);
-            else
-            {
-                this.stop_all_act();
-                this.Get_Config(() =>
-                {
-                    this.Show_list_lang(call_func);
-                });
-            }
+            if (this.is_ready) this.lang.Show_list_lang(call_func);
         }
 
         public void buy_product(int index)

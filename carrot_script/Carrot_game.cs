@@ -1,4 +1,3 @@
-using Newtonsoft.Json;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -16,14 +15,6 @@ using UnityEngine.UI;
 
 namespace Carrot
 {
-    public struct Carrot_rank_data
-    {
-        public Carrot_Rate_user_data user { get; set; }
-        public string type { get; set; }
-        public string scores { get; set; }
-        public string date { get; set; }
-    }
-
     public class carrot_game_rank_type
     {
         public string s_name;
@@ -70,7 +61,6 @@ namespace Carrot
         [Header("Top player")]
         public string[] leaderboardId;
         public Sprite icon_top_player;
-        public GameObject item_top_player_prefab;
         public Sprite[] icon_rank_player;
         private LeaderboardScoresPage scoreResponse = null;
         private int rank_type_temp = 0;
@@ -412,6 +402,13 @@ namespace Carrot
                 if (this.act_handle_detection != null) this.act_handle_detection(false);
             }
             this.check_connect_gamepad();
+        }
+
+        public void set_enable_all_gamepad(bool is_run){
+            for (int i = this.list_gamepad.Count - 1; i >= 0; i--)
+            {
+                this.list_gamepad[i].enabled=is_run;
+            }
         }
 
         private void reset_btn_console()

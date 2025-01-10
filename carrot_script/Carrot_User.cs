@@ -37,15 +37,9 @@ namespace Carrot
         public void On_load(Carrot carrot)
         {
             this.carrot = carrot;
-            if (!PlayerAccountService.Instance.IsSignedIn) SignInCachedUser();
+            //if (!PlayerAccountService.Instance.IsSignedIn) SignInCachedUser();
             AuthenticationService.Instance.SignedIn += () =>
             {
-                Debug.Log($"PlayerID: {AuthenticationService.Instance.PlayerId}");
-                Debug.Log($"PlayerName: {AuthenticationService.Instance.PlayerName}");
-                Debug.Log($"CreatedAt: {AuthenticationService.Instance.PlayerInfo.CreatedAt}");
-                Debug.Log($"Username: {AuthenticationService.Instance.PlayerInfo.Username}");
-                Debug.Log($"Access Token: {AuthenticationService.Instance.AccessToken}");
-                Debug.Log($"Token hợp lệ. Expiry Time: {AuthenticationService.Instance.SessionTokenExists}");
                 if (this.carrot.img_btn_login != null)
                 {
                     this.carrot.img_btn_login.sprite = this.icon_user_login_true;
@@ -91,12 +85,29 @@ namespace Carrot
                 item_name.set_title("Player Name");
                 item_name.set_tip(playerName);
 
+                Carrot_Box_Btn_Item btn_edit_name=item_name.create_item();
+                btn_edit_name.set_icon(this.carrot.icon_carrot_write);
+                btn_edit_name.set_color(Color.white);
+                btn_edit_name.set_color(this.carrot.color_highlight);
+                btn_edit_name.set_act(()=>{
+                    this.carrot.game.set_enable_gamepad_console(false);
+                    this.carrot.game.set_enable_all_gamepad(false);
+                    Carrot_Window_Input inp_box=this.carrot.Show_input("Change name","Enter new name",playerName);
+                    inp_box.set_act_done((s_val)=>{
+                        AuthenticationService.Instance.UpdatePlayerNameAsync(s_val);
+                        this.carrot.Show_msg(this.carrot.lang.Val("register", "Register Account"), this.carrot.lang.Val("acc_edit_success", "Successful account information update!"), Msg_Icon.Success);
+                        inp_box.close();
+                        this.Act_close_box();
+                        this.carrot.game.set_enable_gamepad_console(true);
+                        this.carrot.game.set_enable_all_gamepad(true);
+                    });
+                });
+
                 Carrot_Box_Item item_accountPortal = this.box_list.create_item("accountPortal");
                 item_accountPortal.set_icon(this.carrot.icon_carrot_link);
                 item_accountPortal.set_title("Account Portal");
                 item_accountPortal.set_tip("Open Account Portal");
-                item_accountPortal.set_act(() =>
-                {
+                item_accountPortal.set_act(() =>{
                     this.carrot.play_sound_click();
                     Application.OpenURL(PlayerAccountService.Instance.AccountPortalUrl);
                 });
@@ -160,7 +171,6 @@ namespace Carrot
         {
             if (this.user_login_item_setting != null)
             {
-                #if UNITY_PLAYER_ACCOUNT
                 if (!PlayerAccountService.Instance.IsSignedIn)
                 {
                     this.user_login_item_setting.set_icon(this.icon_user_change_password);
@@ -194,7 +204,6 @@ namespace Carrot
                 this.user_login_item_setting.set_act(async () =>{
                     await this.Show_loginAsync(this.carrot.Reload_setting);
                 });
-                #endif
             }
         }
     
