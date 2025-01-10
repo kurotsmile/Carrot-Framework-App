@@ -33,11 +33,12 @@ namespace Carrot
         public Color32 color_logout;
         public Color32 color_change_password;
         public Carrot_Box_Item user_login_item_setting = null;
+        private int count_try_login=0;
 
         public void On_load(Carrot carrot)
         {
             this.carrot = carrot;
-            //if (!PlayerAccountService.Instance.IsSignedIn) SignInCachedUser();
+            if (!PlayerAccountService.Instance.IsSignedIn) SignInCachedUser();
             AuthenticationService.Instance.SignedIn += () =>
             {
                 if (this.carrot.img_btn_login != null)
@@ -68,6 +69,7 @@ namespace Carrot
 
         public async Task Show_loginAsync(UnityAction act_afte_login = null)
         {
+            count_try_login=0;
             this.carrot.play_sound_click();
             if (!PlayerAccountService.Instance.IsSignedIn)
             {
@@ -113,12 +115,13 @@ namespace Carrot
                 });
 
                 Carrot_Box_Btn_Panel panel_btn = this.box_list.create_panel_btn();
-
+                /*
                 Carrot_Button_Item btn_edit = panel_btn.create_btn("btn_edit");
                 btn_edit.set_icon(this.carrot.icon_carrot_done);
                 btn_edit.set_label(this.carrot.lang.Val("edit", "Edit"));
                 btn_edit.set_label_color(Color.white);
                 btn_edit.set_bk_color(this.carrot.color_highlight);
+                */
 
                 Carrot_Button_Item btn_logout = panel_btn.create_btn("btn_logout");
                 btn_logout.set_icon(this.icon_user_logout);
@@ -152,7 +155,8 @@ namespace Carrot
                 await PlayerAccountService.Instance.StartSignInAsync();
                 this.carrot.delay_function(2f, () =>
                 {
-                    Check_login(act_after_login);
+                    this.count_try_login++;
+                    if(this.count_try_login<=1) Check_login(act_after_login);
                 });
             }
         }

@@ -735,6 +735,7 @@ namespace Carrot
 
         public async Task update_scores_playerAsync(int scores, int type = 0)
         {
+            if (!PlayerAccountService.Instance.IsSignedIn){return;}
             this.rank_type_temp = type;
             try
             {
@@ -745,13 +746,7 @@ namespace Carrot
             catch (Exception ex)
             {
                 Debug.LogError($"Lỗi khi gửi điểm: {ex.Message}");
-                Act_update_scores_fail(ex.Message);
             }
-        }
-
-        private void Act_update_scores_fail(string s_error)
-        {
-            this.carrot.Show_msg(this.carrot.lang.Val("top_player", "Player rankings"), s_error, Msg_Icon.Error);
         }
         #endregion
     }
