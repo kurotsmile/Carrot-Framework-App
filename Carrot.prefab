@@ -275,6 +275,7 @@ GameObject:
   - component: {fileID: 1244711569507986795}
   - component: {fileID: 3353702974751351471}
   - component: {fileID: 6474188085226842489}
+  - component: {fileID: 6567307194208892893}
   m_Layer: 0
   m_Name: Carrot
   m_TagString: Untagged
@@ -349,7 +350,7 @@ MonoBehaviour:
   camera_pro: {fileID: 1244711569507986795}
   location: {fileID: 3353702974751351471}
   theme: {fileID: 6474188085226842489}
-  server: {fileID: 0}
+  server: {fileID: 6567307194208892893}
   window_msg_prefab: {fileID: 1750426150788012, guid: 064e59bc4fa60ed48b452c77919d6473, type: 3}
   window_loading_prefab: {fileID: 2632683814581162851, guid: af7a7fddea11b0b4ca4aa617dd48a44e, type: 3}
   window_exit_prefab: {fileID: 2646574534074554939, guid: 93cb11e1d2cdb424f9711d3b049a4eb9, type: 3}
@@ -460,8 +461,8 @@ MonoBehaviour:
   icon_waiting_music_game: {fileID: 21300000, guid: d716d72d584e1c5479acf98e5b6a0e22, type: 3}
   sound_bk_game_test: {fileID: 7977285874268033645}
   obj_gamepad_prefab: {fileID: 3088375454328611850, guid: da7ed5c1b98a17642b7ba6477c695bb1, type: 3}
-  leaderboardId: []
   icon_top_player: {fileID: 21300000, guid: 2e78053b6ff70004d8ac3db19e5b85c4, type: 3}
+  item_top_player_prefab: {fileID: 9017743497284892556, guid: b6db2bf4525eace44bd84e39955db77f, type: 3}
   icon_rank_player:
   - {fileID: 1742048843, guid: 55e90c267e0fdd34c95f0298c27c873f, type: 3}
   - {fileID: 1136403910, guid: 55e90c267e0fdd34c95f0298c27c873f, type: 3}
@@ -489,7 +490,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   icon_user_login_true: {fileID: 21300000, guid: 41608187babc5ee4391b9b31bbecbbbc, type: 3}
   icon_user_login_false: {fileID: 21300000, guid: 754b3bab866dcbc4b8db6fa388bf48c3, type: 3}
-  icon_user_anonymous: {fileID: 21300000, guid: fac4ae99ee513ba418c14755acd373f0, type: 3}
+  window_login_prefab: {fileID: 7208411555534302970, guid: f1d2d220e1821f045851bf4d0e794c54, type: 3}
+  list_id_field_advanced: []
   icon_user_name: {fileID: 21300000, guid: 90ac16e4f662406458fcc9f799513382, type: 3}
   icon_user_status: {fileID: 21300000, guid: 352c3e332aacebf46bc55dfbe4090f1b, type: 3}
   icon_user_register: {fileID: 21300000, guid: 9660ed7fe36e1b14ba7d40ac2c46de8b, type: 3}
@@ -550,3 +552,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 687169fc80c58b645a5dacde47b4554f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &6567307194208892893
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5170736565810424376}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b1d87b8516cc5c9439258de0110fb665, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  carrot: {fileID: 5170736565810424378}

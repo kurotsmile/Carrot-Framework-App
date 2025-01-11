@@ -205,7 +205,7 @@ namespace Carrot
             if (dataLang[this.s_key_lang_temp]!=null)
             {
                 this.data_lang_value= dataLang[this.s_key_lang_temp] as IDictionary;
-                /*
+                
                 carrot.Get_Data(this.carrot.random(this.carrot.list_url_lang_app), (s_data) =>
                 {
                     IDictionary data_lang_app=Json.Deserialize(s_data) as IDictionary;
@@ -220,7 +220,6 @@ namespace Carrot
                     PlayerPrefs.SetString("db_lang_value_" + this.s_key_lang_temp, s_data_json);
                     this.Change_lang(this.s_key_lang_temp);
                 }, (s_error) =>{this.Act_sel_lang_done(s_data);});
-                */
             }
             else
             {

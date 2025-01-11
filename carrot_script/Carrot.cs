@@ -8,8 +8,6 @@ using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.Networking;
 using UnityEngine.UI;
-using System.Threading.Tasks;
-using Unity.Services.Core;
 
 namespace Carrot
 {
@@ -28,7 +26,10 @@ namespace Carrot
     {
         [Header("Config Server")]
         public string mainhost = "https://carrotstore.web.app";
+        public string key_api_rest_firestore = "";
         public string key_api_google_location_map= "";
+        public string[] list_url_config;
+        public string[] list_url_lang_app;
 
         [Header("Config App")]
         public ModelApp model_app;
@@ -82,6 +83,7 @@ namespace Carrot
         public Carrot_camera camera_pro;
         public Carrot_location location;
         public Carrot_Theme theme;
+        public Carrot_Server server;
 
         [Header("Panel Obj")]
         public GameObject window_msg_prefab;
@@ -167,17 +169,17 @@ namespace Carrot
         private UnityAction act_result_msg_config;
         private bool is_ready = false;
         public IDictionary config;
-
-        public async Task Load_Carrot()
+        private int count_check_host = 0;
+        
+        public void Load_Carrot()
         {
-            if(setting_login==Setting_Option.Show) await UnityServices.InitializeAsync();
             this.list_log = new List<string>();
 
             this.game.Load_carrot_game();
 
             this.tool = new Carrot_tool();
             this.lang.On_load(this);
-            if(this.setting_login==Setting_Option.Show) this.user.On_load(this);
+            this.user.On_load(this);
             this.camera_pro.On_load();
             if(this.index_inapp_remove_ads!=-1||this.index_inapp_buy_bk_music!=-1) this.shop.On_load(this);
             this.shop.onCarrotPaySuccess += this.carrot_by_success;
@@ -200,17 +202,38 @@ namespace Carrot
                 this.is_vibrate = false;
             if (this.check_lost_internet) this.check_connect_internet();
             this.is_ready = true;
+
+            this.Get_Config();
         }
 
-        public async Task Load_CarrotAsync(UnityAction act_check_exit_app)
+        private void Get_Config(UnityAction act_done=null)
         {
-            await Load_Carrot();
+            this.Get_Data(this.random(this.list_url_config), (data) =>
+            {
+                this.config = Json.Deserialize(data) as IDictionary;
+                this.is_ready = true;
+                act_done?.Invoke();
+                this.count_check_host = 0;
+            }, (s_error) =>
+            {
+                this.count_check_host++;
+                if (this.count_check_host >= 4)
+                    this.count_check_host = 0;
+                else
+                    this.Get_Config(act_done);
+            });
+        }
+
+        public void Load_Carrot(UnityAction act_check_exit_app)
+        {
+            Load_Carrot();
             this.act_check_exit_app = act_check_exit_app;
         }
 
         public void show_list_carrot_app() { this.carrot_list_app.show_list_carrot_app(); }
         public void clear_contain(Transform area_body) { foreach (Transform child in area_body) { Destroy(child.gameObject); } }
-        public async void show_login() { await this.user.Show_loginAsync(); }
+        public void show_login() { this.user.show_login(); }
+        public void show_user_register() { this.user.show_user_register(); }
         public string L(string s_key, string s_default = ""){ return lang.Val(s_key,s_default); }
         public Carrot_tool get_tool() { return this.tool; }
 
@@ -468,18 +491,17 @@ namespace Carrot
             this.msg = this.Show_msg(L("delete_all_data", "Clear all application data"), L("delete_all_data_tip", "Confirm erase all data and set up") + "?", () =>
             {
                 if (this.msg != null) this.msg.close();
+                this.user.delete_data_user_login();
                 PlayerPrefs.DeleteAll();
                 if (this.type_control != TypeControl.None) game.Destroy_all_gamepad();
                 this.get_tool().delete_file("music_bk");
                 if (model_app == ModelApp.Develope) Debug.Log("Delete All Data Success!!!");
                 this.msg = this.Show_msg(L("delete_all_data", "Clear all application data"), L("delete_all_data_success", "Erase all settings settings and app data successfully!"), Msg_Icon.Success);
-                this.delay_function(2f, async ()=>{
-                    await this.Restart_app();
-                });
+                this.delay_function(2f, ()=>this.Restart_app());
             });
         }
 
-        private async Task Restart_app()
+        private void Restart_app()
         {
             this.is_ready = false;
             if(this.msg!=null) this.msg.close();
@@ -487,7 +509,7 @@ namespace Carrot
             if(this.act_after_delete_all_data!=null)
                 this.act_after_delete_all_data.Invoke();
             else
-                await this.Load_CarrotAsync(this.act_check_exit_app);
+                this.Load_Carrot(this.act_check_exit_app);
         }
 
         public Carrot_Window_Loading send(string url, WWWForm frm, UnityAction<string> done_func = null, UnityAction<string> fail_func = null)
@@ -545,7 +567,16 @@ namespace Carrot
 
         public void Show_list_lang(UnityAction<string> call_func)
         {
-            if (this.is_ready) this.lang.Show_list_lang(call_func);
+            if (this.is_ready)
+                this.lang.Show_list_lang(call_func);
+            else
+            {
+                this.stop_all_act();
+                this.Get_Config(() =>
+                {
+                    this.Show_list_lang(call_func);
+                });
+            }
         }
 
         public void buy_product(int index)
@@ -744,9 +775,7 @@ namespace Carrot
                 item_setting_top_player.set_icon(this.game.icon_top_player);
                 item_setting_top_player.set_title(lang.Val("top_player", "Player rankings"));
                 item_setting_top_player.set_tip(lang.Val("top_player_tip","User score leaderboard"));
-                item_setting_top_player.set_act(async ()=>{
-                    await this.game.Show_List_Top_player();
-                });
+                item_setting_top_player.set_act(this.game.Show_List_Top_player);
                 item_setting_top_player.set_lang_data("top_player", "top_player_tip");
             }
 
@@ -771,7 +800,9 @@ namespace Carrot
                     this.item_setting_ads.set_act(this.buy_inapp_removeads);
                     this.item_setting_ads.gameObject.SetActive(true);
                 }
+                //else this.item_setting_ads.gameObject.SetActive(false);
             }
+
 
             if (this.index_inapp_buy_bk_music != -1)
             {
@@ -923,6 +954,7 @@ namespace Carrot
 
         public void Reload_setting()
         {
+            if (this.user.get_cur_window_user_login() != null) this.user.get_cur_window_user_login().close();
             if (this.box_setting != null) this.box_setting.close();
             if (this.box_setting.get_act_before_closing() != null)
             {
