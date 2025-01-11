@@ -8,6 +8,8 @@ using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.Networking;
 using UnityEngine.UI;
+using System.Threading.Tasks;
+using Unity.Services.Core;
 
 namespace Carrot
 {
@@ -166,8 +168,9 @@ namespace Carrot
         private bool is_ready = false;
         public IDictionary config;
 
-        public void Load_Carrot()
+        public async Task Load_Carrot()
         {
+            if(setting_login==Setting_Option.Show) await UnityServices.InitializeAsync();
             this.list_log = new List<string>();
 
             this.game.Load_carrot_game();
@@ -199,9 +202,9 @@ namespace Carrot
             this.is_ready = true;
         }
 
-        public void Load_Carrot(UnityAction act_check_exit_app)
+        public async Task Load_CarrotAsync(UnityAction act_check_exit_app)
         {
-            Load_Carrot();
+            await Load_Carrot();
             this.act_check_exit_app = act_check_exit_app;
         }
 
@@ -470,11 +473,13 @@ namespace Carrot
                 this.get_tool().delete_file("music_bk");
                 if (model_app == ModelApp.Develope) Debug.Log("Delete All Data Success!!!");
                 this.msg = this.Show_msg(L("delete_all_data", "Clear all application data"), L("delete_all_data_success", "Erase all settings settings and app data successfully!"), Msg_Icon.Success);
-                this.delay_function(2f, ()=>this.Restart_app());
+                this.delay_function(2f, async ()=>{
+                    await this.Restart_app();
+                });
             });
         }
 
-        private void Restart_app()
+        private async Task Restart_app()
         {
             this.is_ready = false;
             if(this.msg!=null) this.msg.close();
@@ -482,7 +487,7 @@ namespace Carrot
             if(this.act_after_delete_all_data!=null)
                 this.act_after_delete_all_data.Invoke();
             else
-                this.Load_Carrot(this.act_check_exit_app);
+                await this.Load_CarrotAsync(this.act_check_exit_app);
         }
 
         public Carrot_Window_Loading send(string url, WWWForm frm, UnityAction<string> done_func = null, UnityAction<string> fail_func = null)
