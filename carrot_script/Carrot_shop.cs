@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.Purchasing;
+using UnityEngine.Purchasing.Extension;
 
 namespace Carrot
 {
@@ -12,7 +13,7 @@ namespace Carrot
         void Carrot_restore_success(string[] arr_id);
     }
 
-    public class Carrot_shop : MonoBehaviour, IStoreListener
+    public class Carrot_shop : MonoBehaviour, IDetailedStoreListener
     {
         IStoreController m_StoreController;
         IExtensionProvider extensions;
@@ -412,6 +413,11 @@ namespace Carrot
             product_id_pay = "";
             order_type_pay = "";
             order_id_pay = "";
+        }
+
+        public void OnPurchaseFailed(Product product, PurchaseFailureDescription failureDescription)
+        {
+            throw new System.NotImplementedException();
         }
         #endregion
 

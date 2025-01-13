@@ -181,6 +181,14 @@ namespace Carrot
                 System.IO.File.WriteAllBytes(Application.persistentDataPath + "/" + name_file_save, data_file);
         }
 
+        public void save_file(string name_file_save,string data_text)
+        {
+            if (Application.isEditor)
+                System.IO.File.WriteAllText(Application.dataPath + "/" + name_file_save, data_text);
+            else
+                System.IO.File.WriteAllText(Application.persistentDataPath + "/" + name_file_save, data_text);
+        }
+
         public void create_folder(string s_name_folder)
         {
             if (Application.isEditor)
