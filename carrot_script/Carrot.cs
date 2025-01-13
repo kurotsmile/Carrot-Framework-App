@@ -166,6 +166,7 @@ namespace Carrot
         public UnityAction act_check_exit_app;
         public UnityAction act_after_close_all_box;
         public UnityAction act_after_delete_all_data;
+        public UnityAction act_buy_ads_success;
         private UnityAction act_result_msg_config;
         private bool is_ready = false;
         public IDictionary config;
@@ -1206,6 +1207,7 @@ namespace Carrot
 
         private void in_app_remove_ads()
         {
+            this.act_buy_ads_success?.Invoke();
             if (item_setting_ads) Destroy(item_setting_ads.gameObject);
             this.Show_msg(lang.Val("shop", "Shop"), lang.Val("ads_remove_success", "Ad removal successful!"), Msg_Icon.Success);
         }
