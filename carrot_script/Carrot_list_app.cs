@@ -94,6 +94,12 @@ namespace Carrot
         {
             string s_key_lang = this.carrot.lang.Get_key_lang();
             string s_key_store_public = this.carrot.store_public.ToString().ToLower();
+
+            var s_link = "";
+            if (data_item[s_key_store_public] != null) s_link = data_item[s_key_store_public].ToString();
+            if (s_link == "") return;
+            var s_link_carrot = s_link;
+
             string s_id_app = data_item["id_import"].ToString();
             Carrot_Box_Item item_app = box_list_app.create_item(s_id_app);
 
@@ -106,13 +112,6 @@ namespace Carrot
             item_app.set_title(s_name);
             if (data_item["type"] != null) item_app.set_tip(data_item["type"].ToString());
 
-            var s_link = "";
-            if (data_item[s_key_store_public] != null) s_link = data_item[s_key_store_public].ToString();
-            if (s_link == "")
-            {
-                if (data_item["google_play"] != null) s_link = data_item["google_play"].ToString();
-            }
-            var s_link_carrot = s_link;
             Carrot_Box_Btn_Item app_btn_download = item_app.create_item();
             app_btn_download.set_icon(this.carrot.icon_carrot_download);
             app_btn_download.set_color(this.carrot.color_highlight);
@@ -183,24 +182,24 @@ namespace Carrot
 
             for (int i = 0; i < list_app.Count; i++)
             {
-                if (count_app_exit < 10) Add_item_app_exit(list_app[i] as IDictionary);
-                count_app_exit++;
+                if (count_app_exit < 10) if(Add_item_app_exit(list_app[i] as IDictionary)) count_app_exit++;
             }
 
             this.list_btn_gamepad.Add(this.window_exit.UI.obj_gamepad[0]);
             this.list_btn_gamepad.Add(this.window_exit.UI.obj_gamepad[1]);
         }
 
-        private void Add_item_app_exit(IDictionary data_app_exit)
+        private bool Add_item_app_exit(IDictionary data_app_exit)
         {
-            if(data_app_exit==null) return;
-            if(data_app_exit["name_en"]==null) return;
+            if(data_app_exit==null) return false;
+            if(data_app_exit["name_en"]==null) return false;
             string s_id_app = data_app_exit["name_en"].ToString();
             if (data_app_exit["icon"] != null)
             {
                 var s_store = this.carrot.store_public.ToString().ToLower();
                 var s_link = "";
                 if (data_app_exit[s_store] != null) s_link = data_app_exit[s_store].ToString();
+                if(s_link=="") return false;
                 var s_link_carrot = s_link;
                 Carrot_Button_Item item_app_exit = this.window_exit.create_item();
                 Sprite icon_app = this.carrot.get_tool().get_sprite_to_playerPrefs(s_id_app);
@@ -215,6 +214,7 @@ namespace Carrot
                 }
                 item_app_exit.set_act_click(() => this.open_link(s_link));
             }
+            return true;
         }
 
         private void open_link(string s_link)
