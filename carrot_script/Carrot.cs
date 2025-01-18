@@ -1097,7 +1097,6 @@ namespace Carrot
                     }                    
                 }
             });
-            
         }
 
         public void buy_inapp_removeads()

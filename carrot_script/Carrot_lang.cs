@@ -117,14 +117,12 @@ namespace Carrot
 
         private void Add_item_to_list_box(IDictionary data_lang)
         {
-          
             var s_key = data_lang["key"].ToString();
             string s_key_lang = data_lang["key"].ToString();
             Carrot_Box_Item item_lang = this.box_lang.create_item(s_key);
             item_lang.set_icon(this.icon);
             if (data_lang["name"] != null) item_lang.set_title(data_lang["name"].ToString());
             item_lang.set_tip(s_key_lang);
-
 
             string s_id_icon_lang = "icon_" + s_key_lang;
             Sprite sp_icon_lang = this.carrot.get_tool().get_sprite_to_playerPrefs(s_id_icon_lang);
