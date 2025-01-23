@@ -56,7 +56,7 @@ namespace Carrot
             box_list = this.carrot.Create_Box("list_color");
             box_list.set_item_size(new Vector2(50f, 50f));
             box_list.set_icon(this.carrot.sp_icon_picker_color);
-            box_list.set_title(this.carrot.lang.Val("setting_color", "Color Select"));
+            box_list.set_title(this.carrot.L("setting_color", "Color Select"));
 
             this.Header_menu_box(this.box_list);
 

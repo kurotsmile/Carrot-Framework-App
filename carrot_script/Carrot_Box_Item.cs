@@ -272,7 +272,7 @@ namespace Carrot
                 {
                     string val =list_val[i].ToString();
                     string val_en = list_en[i].ToString();
-                    string s_val = PlayerPrefs.GetString(val, val_en);
+                    string s_val = this.carrot.lang.Val(val, val_en);
                     this.dropdown_val.options.Add(new Dropdown.OptionData(s_val));
                 }
                 this.dropdown_val.value = index_sel;
