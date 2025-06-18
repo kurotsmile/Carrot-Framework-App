@@ -1,6 +1,7 @@
 using System.Collections;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.Networking;
 using UnityEngine.UI;
 
 namespace Carrot
@@ -33,7 +34,7 @@ namespace Carrot
             this.s_lang_key = PlayerPrefs.GetString("lang", "en");
 
             TextAsset DataFrwTex = Resources.Load<TextAsset>(this.NameFileCustomerFrw);
-            if (DataFrwTex!=null)
+            if (DataFrwTex != null)
             {
                 this.DataFrameworkUnity = Json.Deserialize(DataFrwTex.text) as IDictionary;
             }
@@ -46,7 +47,7 @@ namespace Carrot
             if (this.carrot.FileNameLangApp != "")
             {
                 TextAsset DataLanAppText = Resources.Load<TextAsset>(this.carrot.FileNameLangApp);
-                if (DataLanAppText != null) this.DataLangApp =Json.Deserialize(DataLanAppText.text) as IDictionary;
+                if (DataLanAppText != null) this.DataLangApp = Json.Deserialize(DataLanAppText.text) as IDictionary;
             }
 
             this.LoadData();
@@ -93,10 +94,10 @@ namespace Carrot
             if (this.DataListCountry == null)
             {
                 TextAsset data_list_lang = Resources.Load<TextAsset>(this.NameFileCustomerListCountry);
-                if (data_list_lang!=null)
+                if (data_list_lang != null)
                 {
-                    DataListCountry = Json.Deserialize(data_list_lang.text) as IList;  
-                    this.Load_list_lang_by_data(DataListCountry); 
+                    DataListCountry = Json.Deserialize(data_list_lang.text) as IList;
+                    this.Load_list_lang_by_data(DataListCountry);
                 }
                 else
                 {
@@ -273,17 +274,17 @@ namespace Carrot
 
         private void UpdateDataListCountry()
         {
-            this.carrot.get_tool().save_file("Resources/"+this.NameFileCustomerListCountry+".json", Json.Serialize(this.DataListCountry));
+            this.carrot.get_tool().save_file("Resources/" + this.NameFileCustomerListCountry + ".json", Json.Serialize(this.DataListCountry));
         }
 
         private void UpdateDataLangApp()
         {
-            this.carrot.get_tool().save_file("Resources/"+this.carrot.FileNameLangApp+".json", Json.Serialize(this.DataLangApp));
+            this.carrot.get_tool().save_file("Resources/" + this.carrot.FileNameLangApp + ".json", Json.Serialize(this.DataLangApp));
         }
 
         private void UpdateDataFrw()
         {
-            this.carrot.get_tool().save_file("Resources/"+this.NameFileCustomerFrw+".json", Json.Serialize(this.DataFrameworkUnity));
+            this.carrot.get_tool().save_file("Resources/" + this.NameFileCustomerFrw + ".json", Json.Serialize(this.DataFrameworkUnity));
         }
 
         public void Show_list_lang(UnityAction<string> fnc_after_sel_lang)
@@ -404,18 +405,43 @@ namespace Carrot
                 item_data.set_icon(this.carrot.icon_carrot_database);
                 item_data.set_title(key.ToString());
                 item_data.set_type(Box_Item_Type.box_value_input);
+                string s_tip = "";
                 if (is_frw)
                 {
-                    if (this.DataFrameworkUnity_en[key] != null) item_data.set_tip(this.DataFrameworkUnity_en[key].ToString());
+                    if (this.DataFrameworkUnity_en[key] != null)
+                    {
+                        s_tip = this.DataFrameworkUnity_en[key].ToString();
+                        item_data.set_tip(this.DataFrameworkUnity_en[key].ToString());
+                    }
                 }
                 else
                 {
+                    s_tip = this.DataLangApp_en[key].ToString();
                     if (this.DataLangApp_en[key] != null) item_data.set_tip(this.DataLangApp_en[key].ToString());
                 }
                 if (dataEdit[key] != null) item_data.set_val(dataEdit[key].ToString());
 
                 this.AddBtnCopyItemDataBox(item_data);
-                if (key_lang_edit == "en") this.AddBtnDelItemDataBox(item_data);
+                if (key_lang_edit == "en")
+                {
+                    this.AddBtnDelItemDataBox(item_data);
+                }
+                else
+                {
+                    if (s_tip != "")
+                    {
+                        Carrot_Box_Btn_Item btrn_translate = item_data.create_item();
+                        btrn_translate.set_icon(this.carrot.lang.icon);
+                        btrn_translate.set_icon_color(Color.white);
+                        btrn_translate.set_color(this.carrot.color_highlight);
+                        btrn_translate.set_act(() =>
+                        {
+                            this.carrot.play_sound_click();
+                            Application.OpenURL("https://translate.google.com/?hl=vi&sl=en&tl=" + this.Get_key_lang() + "&text=" + UnityWebRequest.EscapeURL(s_tip) + "&op=translate");
+                        });
+                    }
+                }
+
             }
 
             Carrot_Box_Btn_Panel panel = box_data.create_panel_btn();
