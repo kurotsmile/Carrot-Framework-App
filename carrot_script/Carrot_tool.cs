@@ -312,6 +312,21 @@ namespace Carrot
             }
         }
 
+        public void Load_File_Text(string name_file,UnityAction<string> act)
+        {
+            string name_file_read;
+            if (Application.isEditor)
+                name_file_read = Application.dataPath + "/" + name_file;
+            else
+                name_file_read = Application.persistentDataPath + "/" + name_file;
+
+            if (System.IO.File.Exists(name_file_read))
+            {
+                string content = System.IO.File.ReadAllText(name_file_read);
+                act?.Invoke(content);
+            }
+        }
+
         public void delete_file(string name_file)
         {
             if (Application.isEditor)

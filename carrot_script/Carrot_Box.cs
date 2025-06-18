@@ -190,8 +190,36 @@ namespace Carrot
             Carrot_Box_Btn_Panel panel_btn = obj_panel_btn.GetComponent<Carrot_Box_Btn_Panel>();
             return panel_btn;
         }
+        
+        public Carrot_Box_Btn_Panel CreatePanelCancelDone(UnityAction actDone,UnityAction actCancel=null)
+        {
+            GameObject obj_panel_btn = this.add_item(this.box_item_panel_btn_prefab);
+            Carrot_Box_Btn_Panel panel_btn = obj_panel_btn.GetComponent<Carrot_Box_Btn_Panel>();
+            Carrot_Button_Item btn_done=panel_btn.create_btn();
+            btn_done.set_icon_white(this.carrot.icon_carrot_done);
+            btn_done.set_label_color(Color.white);
+            btn_done.set_bk_color(this.carrot.color_highlight);
+            btn_done.set_label(this.carrot.L("done","Done"));
+            btn_done.set_act_click(()=>
+            {
+                this.close();
+                actDone?.Invoke();
+            });
 
-        public Carrot_Box_Item create_item_of_index(string s_name = "Item_Box",int index_Sibling=0)
+            Carrot_Button_Item btn_cancel=panel_btn.create_btn();
+            btn_cancel.set_icon_white(this.carrot.icon_carrot_cancel);
+            btn_cancel.set_label_color(Color.white);
+            btn_cancel.set_bk_color(this.carrot.color_highlight);
+            btn_cancel.set_label(this.carrot.L("cancel","Cancel"));
+            btn_cancel.set_act_click(()=>
+            {
+                this.close();
+                actCancel?.Invoke();
+            });
+            return panel_btn;
+        }
+
+        public Carrot_Box_Item create_item_of_index(string s_name = "Item_Box", int index_Sibling = 0)
         {
             Carrot_Box_Item box_item_new = this.add_item(this.box_list_item_prefab).GetComponent<Carrot_Box_Item>();
             box_item_new.name = s_name;

@@ -29,7 +29,8 @@ namespace Carrot
         public string key_api_rest_firestore = "";
         public string key_api_google_location_map= "";
         public string[] list_url_config;
-        public string[] list_url_lang_app;
+        [Tooltip("Không bao gồm phần mở rộng (.json) và file phải nằm trong thư mục Resources")]
+        public string FileNameLangApp = "";
 
         [Header("Config App")]
         public ModelApp model_app;
