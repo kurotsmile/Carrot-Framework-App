@@ -120,9 +120,7 @@ namespace Carrot
         public Carrot_Box Show_info_user_by_data(IDictionary data_user)
         {
             if (this.box_list != null) this.box_list.close();
-            this.box_list = this.carrot.Create_Box();
-            this.box_list.set_title(this.carrot.lang.Val("acc_info", "Account Information"));
-            this.box_list.set_icon(this.icon_user_info);
+            this.box_list = this.carrot.Create_Box(this.carrot.lang.Val("acc_info", "Account Information"),this.icon_user_info);
 
             if (data_user["avatar"] != null)
             {
@@ -294,9 +292,7 @@ namespace Carrot
 
         public void show_window_lost_password()
         {
-            this.box_list = this.carrot.Create_Box();
-            this.box_list.set_icon(this.icon_user_change_password);
-            this.box_list.set_title(this.carrot.lang.Val("forgot_password", "Forgot password"));
+            this.box_list = this.carrot.Create_Box(this.carrot.lang.Val("forgot_password", "Forgot password"),this.icon_user_change_password);
 
             Carrot_Box_Item item_tip=this.box_list.create_item("item_username");
             item_tip.set_icon(this.icon_user_info);
@@ -467,7 +463,7 @@ namespace Carrot
         private void Edit_or_add_by_data(IDictionary data)
         {
             if (this.box_list != null) this.box_list.close();
-            this.box_list = this.carrot.Create_Box();
+            this.box_list = this.carrot.Create_Box("");
             this.box_list.set_icon(this.icon_user_register);
             if(data==null)
                 this.box_list.set_title(this.carrot.lang.Val("register", "Register Account"));

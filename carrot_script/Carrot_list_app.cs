@@ -73,9 +73,7 @@ namespace Carrot
         {
             this.carrot.hide_loading();
             if (this.box_list_app != null) this.box_list_app.close();
-            this.box_list_app = this.carrot.Create_Box();
-            box_list_app.set_icon(this.carrot.icon_carrot);
-            box_list_app.set_title(this.carrot.lang.Val("list_app_carrot", "Applications from the developer"));
+            this.box_list_app = this.carrot.Create_Box(this.carrot.lang.Val("list_app_carrot", "Applications from the developer"),this.carrot.icon_carrot);
 
             this.btn_header_all = box_list_app.create_btn_menu_header(this.carrot.icon_carrot_all_category);
             this.btn_header_all.set_act(() => this.act_btn_header_box(Carrot_app_type.all));

@@ -187,9 +187,7 @@ namespace Carrot
 
             string name_product = defaultDescription["title"].ToString();
 
-            box_shop=this.carrot.Create_Box();
-            box_shop.set_title(name_product);
-            box_shop.set_icon(this.carrot.icon_carrot_buy);
+            box_shop=this.carrot.Create_Box(name_product,this.carrot.icon_carrot_buy);
 
             Carrot_Box_Btn_Item btn_history = box_shop.create_btn_menu_header(carrot.sp_icon_restore);
             btn_history.set_act(() => Show_history_pay(user_id));
@@ -266,9 +264,7 @@ namespace Carrot
             Fire_Collection fc = new(s_data);
             if (!fc.is_null)
             {
-                Carrot_Box box_history = carrot.Create_Box();
-                box_history.set_title("History Pay");
-                box_history.set_icon(carrot.sp_icon_restore);
+                Carrot_Box box_history = carrot.Create_Box("History Pay",carrot.sp_icon_restore);
 
                 for(int i=0;i<fc.fire_document.Length;i++)
                 {

@@ -622,10 +622,7 @@ namespace Carrot
                     if (this.box_list != null) this.box_list.close();
 
                     IList rank = (IList)app["rank"];
-                    box_list = this.carrot.Create_Box();
-                    box_list.set_icon(this.icon_top_player);
-                    box_list.set_title(this.carrot.lang.Val("top_player","Player rankings"));
-
+                    box_list = this.carrot.Create_Box(this.carrot.lang.Val("top_player","Player rankings"),this.icon_top_player);
                     string id_user_cur = this.carrot.user.get_id_user_login();
 
                     IList<IDictionary> list_rank = new List<IDictionary>();

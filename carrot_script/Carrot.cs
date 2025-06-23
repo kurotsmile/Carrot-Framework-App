@@ -700,11 +700,11 @@ namespace Carrot
             act_func();
         }
 
-        public GameObject create_window(GameObject obj_prefab)
+        public GameObject create_window(GameObject obj_prefab,string NameTrFather="Canvas")
         {
             GameObject obj_window = Instantiate(obj_prefab);
             obj_window.name = "Carrot Window";
-            obj_window.transform.SetParent(GameObject.Find("Canvas").transform);
+            obj_window.transform.SetParent(GameObject.Find(NameTrFather).transform);
             obj_window.transform.localPosition = new Vector3(obj_window.transform.localPosition.x, obj_window.transform.localPosition.y, 0f);
             obj_window.transform.localScale = new Vector3(1f, 1f, 1f);
             obj_window.transform.localRotation = Quaternion.identity;
@@ -717,18 +717,19 @@ namespace Carrot
             return obj_window;
         }
 
-        public Carrot_Box Create_Box()
+
+        public Carrot_Box Create_Box(string s_title,string NameTransfomFather= "Canvas")
         {
-            GameObject box_window = this.create_window(this.window_box_prefab);
+            GameObject box_window = this.create_window(this.window_box_prefab,NameTransfomFather);
             Carrot_Box box = box_window.GetComponent<Carrot_Box>();
+            box.set_title(s_title);
             box.load(this);
             return box.GetComponent<Carrot_Box>();
         }
 
         public Carrot_Box Create_Box(string s_title)
         {
-            Carrot_Box box = this.Create_Box();
-            box.set_title(s_title);
+            Carrot_Box box = this.Create_Box(s_title,"Canvas");
             return box;
         }
 
@@ -979,10 +980,7 @@ namespace Carrot
         private void Show_Support()
         {
             play_sound_click();
-
-            Carrot_Box box_support = Create_Box();
-            box_support.set_icon(icon_carrot_support);
-            box_support.set_title(L("support", "Support"));
+            Carrot_Box box_support = Create_Box(L("support", "Support"),icon_carrot_support);
 
             Carrot_Box_Item item_donnation = box_support.create_item();
             item_donnation.set_icon(icon_carrot_donation);
@@ -1312,9 +1310,7 @@ namespace Carrot
 
         private void Show_box_dev_info()
         {
-            Carrot_Box box_dev = this.Create_Box();
-            box_dev.set_title("Info");
-            box_dev.set_icon(user.icon_user_info);
+            Carrot_Box box_dev = this.Create_Box("Info",user.icon_user_info);
 
             FieldInfo[] fields = GetType().GetFields(BindingFlags.Instance | BindingFlags.Public);
             foreach (FieldInfo field in fields)

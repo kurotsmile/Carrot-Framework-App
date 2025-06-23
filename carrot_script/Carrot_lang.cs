@@ -202,7 +202,7 @@ namespace Carrot
         private void Box_Edit_Or_Add(IDictionary data = null)
         {
             if (this.box_lang != null) this.box_lang.close();
-            this.box_lang = this.carrot.Create_Box();
+            this.box_lang = this.carrot.Create_Box("");
             if (data != null)
             {
                 this.box_lang.set_title("Edit Country");
@@ -382,7 +382,7 @@ namespace Carrot
 
         private void BoxEditData(IDictionary dataEdit, string key_lang_edit, bool is_frw)
         {
-            Carrot_Box box_data = this.carrot.Create_Box();
+            Carrot_Box box_data = this.carrot.Create_Box("");
             IDictionary dataField = null;
             if (is_frw)
             {
