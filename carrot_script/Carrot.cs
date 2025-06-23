@@ -172,7 +172,7 @@ namespace Carrot
         private bool is_ready = false;
         public IDictionary config;
         private int count_check_host = 0;
-        
+        private string NameTransfomFather = "Canvas";
         public void Load_Carrot()
         {
             this.list_log = new List<string>();
@@ -717,19 +717,23 @@ namespace Carrot
             return obj_window;
         }
 
-
-        public Carrot_Box Create_Box(string s_title,string NameTransfomFather= "Canvas")
+        public void SetNameCanvasMain(string nameCanvas)
         {
-            GameObject box_window = this.create_window(this.window_box_prefab,NameTransfomFather);
+            this.NameTransfomFather = nameCanvas;
+        }
+        
+        public Carrot_Box Create_Box()
+        {
+            GameObject box_window = this.create_window(this.window_box_prefab, NameTransfomFather);
             Carrot_Box box = box_window.GetComponent<Carrot_Box>();
-            box.set_title(s_title);
             box.load(this);
             return box.GetComponent<Carrot_Box>();
         }
 
         public Carrot_Box Create_Box(string s_title)
         {
-            Carrot_Box box = this.Create_Box(s_title,"Canvas");
+            Carrot_Box box = this.Create_Box();
+            box.set_title(s_title);
             return box;
         }
 

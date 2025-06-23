@@ -463,7 +463,7 @@ namespace Carrot
         private void Edit_or_add_by_data(IDictionary data)
         {
             if (this.box_list != null) this.box_list.close();
-            this.box_list = this.carrot.Create_Box("");
+            this.box_list = this.carrot.Create_Box();
             this.box_list.set_icon(this.icon_user_register);
             if(data==null)
                 this.box_list.set_title(this.carrot.lang.Val("register", "Register Account"));
