@@ -314,7 +314,7 @@ namespace Carrot
 
         private Carrot_Window_Msg Create_msg()
         {
-            GameObject window_msg = this.create_window(this.window_msg_prefab);
+            GameObject window_msg = this.create_window(this.window_msg_prefab,this.NameTransfomFather);
             window_msg.name = "Window Msg";
             window_msg.GetComponent<Carrot_Window_Msg>().load(this);
             return window_msg.GetComponent<Carrot_Window_Msg>();
@@ -367,15 +367,14 @@ namespace Carrot
         private void Act_msg_config_yes()
         {
             play_sound_click();
-            this.act_result_msg_config?.Invoke();
             this.msg?.close();
-
+            this.act_result_msg_config?.Invoke();
         }
 
         private void Act_msg_config_no()
         {
-            play_sound_click();
             this.msg?.close();
+            play_sound_click();
         }
 
         public Carrot_Window_Loading show_loading()
