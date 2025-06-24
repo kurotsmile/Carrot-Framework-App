@@ -47,7 +47,15 @@ namespace Carrot
             if (this.carrot.FileNameLangApp != "")
             {
                 TextAsset DataLanAppText = Resources.Load<TextAsset>(this.carrot.FileNameLangApp);
-                if (DataLanAppText != null) this.DataLangApp = Json.Deserialize(DataLanAppText.text) as IDictionary;
+                if (DataLanAppText != null)
+                {
+                    this.DataLangApp = Json.Deserialize(DataLanAppText.text) as IDictionary;
+                }
+                else
+                {
+                    this.DataLangApp = Json.Deserialize("{}") as IDictionary;
+                    this.DataLangApp["en"] = Json.Deserialize("{}") as IDictionary;
+                }
             }
 
             this.LoadData();
@@ -114,6 +122,7 @@ namespace Carrot
         private void Load_list_lang_by_data(IList all_item)
         {
             this.carrot.hide_loading();
+            this.DataLangApp_en = this.DataLangApp["en"] as IDictionary;
             if (this.box_lang != null) this.box_lang.close();
             this.box_lang = this.carrot.Create_Box(this.carrot.lang.Val("sel_lang_app", "Choose your language and country"), this.icon);
             for (int i = 0; i < all_item.Count; i++)
@@ -151,17 +160,28 @@ namespace Carrot
 
                         if (this.DataLangApp[s_key] != null)
                         {
-                            btn_lapp.set_color(this.carrot.color_highlight);
-                            btn_lapp.set_act(() =>
+                            int count_key_lang_en=DataLangApp_en.Count;
+                            int count_key_lang_cur = 0;
+                            IDictionary data_lang_cur =DataLangApp[s_key] as IDictionary;
+                            foreach (var key in DataLangApp_en.Keys)
                             {
-                                this.DataLangApp_en = this.DataLangApp["en"] as IDictionary;
-                                this.BoxEditData(this.DataLangApp[s_key] as IDictionary, s_key, false);
-                            });
+                                if (data_lang_cur[key.ToString()] != null)
+                                {
+                                    if(data_lang_cur[key.ToString()].ToString().Trim()!="") count_key_lang_cur++;
+                                }
+                            }
+                            if(count_key_lang_en == count_key_lang_cur)
+                                btn_lapp.set_color(this.carrot.color_highlight);
+                            else
+                                btn_lapp.set_color(Color.red);
                         }
                         else
-                        {
                             btn_lapp.set_color(Color.black);
-                        }
+
+                        btn_lapp.set_act(() =>
+                        {
+                            this.BoxEditData(this.DataLangApp[s_key] as IDictionary, s_key, false);
+                        });
                     }
 
                     Carrot_Box_Btn_Item btn_edit = item_lang.create_item();
@@ -419,7 +439,7 @@ namespace Carrot
                     s_tip = this.DataLangApp_en[key].ToString();
                     if (this.DataLangApp_en[key] != null) item_data.set_tip(this.DataLangApp_en[key].ToString());
                 }
-                if (dataEdit[key] != null) item_data.set_val(dataEdit[key].ToString());
+                if (dataEdit!=null&&dataEdit[key] != null) item_data.set_val(dataEdit[key].ToString());
 
                 this.AddBtnCopyItemDataBox(item_data);
                 if (key_lang_edit == "en")
@@ -437,7 +457,7 @@ namespace Carrot
                         btrn_translate.set_act(() =>
                         {
                             this.carrot.play_sound_click();
-                            Application.OpenURL("https://translate.google.com/?hl=vi&sl=en&tl="+key_lang_edit+"&text="+UnityWebRequest.EscapeURL(s_tip)+"&op=translate");
+                            Application.OpenURL("https://translate.google.com/?hl=vi&sl=en&tl=" + key_lang_edit + "&text=" + UnityWebRequest.EscapeURL(s_tip) + "&op=translate");
                         });
                     }
                 }
