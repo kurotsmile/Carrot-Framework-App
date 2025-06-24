@@ -212,11 +212,14 @@ namespace Carrot
             if (this.tr_item_lang_systemLanguage != null) this.tr_item_lang_systemLanguage.SetSiblingIndex(0);
             if (this.carrot.type_control != TypeControl.None) this.carrot.game.set_list_button_gamepad_console(this.box_lang.UI.get_list_btn());
 
-            this.box_lang.create_btn_menu_header(this.carrot.icon_carrot_add).set_act(() =>
+            if(carrot.model_app == ModelApp.Develope)
             {
-                this.carrot.play_sound_click();
-                this.Box_Edit_Or_Add();
-            });
+                this.box_lang.create_btn_menu_header(this.carrot.icon_carrot_add).set_act(() =>
+                {
+                    this.carrot.play_sound_click();
+                    this.Box_Edit_Or_Add();
+                });
+            }
         }
 
         private void Box_Edit_Or_Add(IDictionary data = null)
