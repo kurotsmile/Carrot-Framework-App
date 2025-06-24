@@ -457,6 +457,7 @@ namespace Carrot
                         btrn_translate.set_act(() =>
                         {
                             this.carrot.play_sound_click();
+                            btrn_translate.set_color(Color.black);
                             Application.OpenURL("https://translate.google.com/?hl=vi&sl=en&tl=" + key_lang_edit + "&text=" + UnityWebRequest.EscapeURL(s_tip) + "&op=translate");
                         });
                     }

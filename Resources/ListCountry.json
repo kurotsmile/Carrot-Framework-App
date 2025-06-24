@@ -120,7 +120,7 @@
     "id_import": "vi"
   },
   {
-    "key": "zh",
+    "key": "zh-CN",
     "name": "Chinese",
     "icon": "https://firebasestorage.googleapis.com/v0/b/carrotstore.appspot.com/o/lang%2Fimage%2Fpng%2F1688556326207_zh.png?alt=media&token=bc367fb2-14aa-473a-ac6a-d44c1ed36e2e",
     "id_import": "zh"
