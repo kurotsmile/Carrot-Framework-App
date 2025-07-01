@@ -75,6 +75,7 @@ namespace Carrot
         public Setting_Option setting_vibrate = Setting_Option.Hide;
         public Setting_Option setting_soundtrack = Setting_Option.Hide;
         public Setting_Option setting_theme = Setting_Option.Hide;
+        public Setting_Option SettingSupport= Setting_Option.Hide;
 
         [Header("Carrot Obj")]
         public Carrot_lang lang;
@@ -937,9 +938,7 @@ namespace Carrot
             item_setting_del_data.set_lang_data("delete_all_data", "delete_all_data_tip");
             item_setting_del_data.set_act(this.Delete_all_data);
 
-            Carrot_Box_Btn_Item btn_support = box_setting.create_btn_menu_header(icon_carrot_support);
-            btn_support.set_act(Show_Support);
-
+            if (SettingSupport == Setting_Option.Show) box_setting.create_btn_menu_header(icon_carrot_support).set_act(Show_Support);
             return box_setting;
         }
 
