@@ -33,16 +33,20 @@ namespace Carrot
         {
             this.carrot.play_sound_click();
             this.carrot.show_loading();
-            if (this.s_data_carrotapp_all == ""){
-                this.carrot.Get_Data(this.url_data, (s_data)=>{
+            if (this.s_data_carrotapp_all == "")
+            {
+                this.carrot.Get_Data(this.url_data, (s_data) =>
+                {
                     Debug.Log("Get new Data list app");
-                    this.s_data_carrotapp_all=s_data;
+                    this.s_data_carrotapp_all = s_data;
                     load_list_by_data(s_data);
-                },get_data_app_exit_fail);
-            }else{
+                }, get_data_app_exit_fail);
+            }
+            else
+            {
                 Debug.Log("Load list app from cache");
                 this.load_list_by_data(this.s_data_carrotapp_all);
-            }            
+            }
         }
 
         private void load_list_by_data(string s_data)
@@ -73,7 +77,7 @@ namespace Carrot
         {
             this.carrot.hide_loading();
             if (this.box_list_app != null) this.box_list_app.close();
-            this.box_list_app = this.carrot.Create_Box(this.carrot.lang.Val("list_app_carrot", "Applications from the developer"),this.carrot.icon_carrot);
+            this.box_list_app = this.carrot.Create_Box(this.carrot.lang.Val("list_app_carrot", "Applications from the developer"), this.carrot.icon_carrot);
 
             this.btn_header_all = box_list_app.create_btn_menu_header(this.carrot.icon_carrot_all_category);
             this.btn_header_all.set_act(() => this.act_btn_header_box(Carrot_app_type.all));
@@ -180,7 +184,7 @@ namespace Carrot
 
             for (int i = 0; i < list_app.Count; i++)
             {
-                if (count_app_exit < 10) if(Add_item_app_exit(list_app[i] as IDictionary)) count_app_exit++;
+                if (count_app_exit < 10) if (Add_item_app_exit(list_app[i] as IDictionary)) count_app_exit++;
             }
 
             this.list_btn_gamepad.Add(this.window_exit.UI.obj_gamepad[0]);
@@ -189,15 +193,15 @@ namespace Carrot
 
         private bool Add_item_app_exit(IDictionary data_app_exit)
         {
-            if(data_app_exit==null) return false;
-            if(data_app_exit["name_en"]==null) return false;
+            if (data_app_exit == null) return false;
+            if (data_app_exit["name_en"] == null) return false;
             string s_id_app = data_app_exit["name_en"].ToString();
             if (data_app_exit["icon"] != null)
             {
                 var s_store = this.carrot.store_public.ToString().ToLower();
                 var s_link = "";
                 if (data_app_exit[s_store] != null) s_link = data_app_exit[s_store].ToString();
-                if(s_link=="") return false;
+                if (s_link == "") return false;
                 var s_link_carrot = s_link;
                 Carrot_Button_Item item_app_exit = this.window_exit.create_item();
                 Sprite icon_app = this.carrot.get_tool().get_sprite_to_playerPrefs(s_id_app);
@@ -229,6 +233,31 @@ namespace Carrot
         {
             this.type = type_show;
             show_list_carrot_app();
+        }
+
+        public void ShowAds()
+        {
+            this.carrot.show_loading();
+            if (this.s_data_carrotapp_all == "")
+            {
+                this.carrot.Get_Data(this.url_data, (s_data) =>
+                {
+                    this.s_data_carrotapp_all = s_data;
+                    ShowAdsByData(s_data);
+                }, get_data_app_exit_fail);
+            }
+            else
+            {
+                ShowAdsByData(this.s_data_carrotapp_all);
+            }
+        }
+
+        private void ShowAdsByData(string sData)
+        {
+            this.carrot.hide_loading();
+            GameObject objWindowAds = carrot.create_window(carrot.WindowAdsPrefab);
+            CarrotAds carrotAds = objWindowAds.GetComponent<CarrotAds>();
+            carrotAds.OnLoad(carrot,sData);
         }
     }
 }

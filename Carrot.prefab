@@ -318,7 +318,7 @@ MonoBehaviour:
   list_url_config:
   - https://raw.githubusercontent.com/kurotsmile/Database-Store-Json/main/config/carrot_framework_config.json
   - https://www.googleapis.com/drive/v3/files/164HKCBnFqiHlvQyTdn5bVN1xbKVrjUXB?alt=media&key=AIzaSyDKcjH_bDJz3EcqPdV5i62IZNVQ6EkyOFg
-  list_url_lang_app: []
+  FileNameLangApp: 
   model_app: 1
   os_app: 0
   store_public: 0
@@ -343,6 +343,7 @@ MonoBehaviour:
   setting_vibrate: 1
   setting_soundtrack: 1
   setting_theme: 1
+  SettingSupport: 1
   lang: {fileID: 292901969}
   user: {fileID: 4645516730937484055}
   shop: {fileID: 1069686049}
@@ -360,6 +361,7 @@ MonoBehaviour:
   window_input_prefab: {fileID: 8647905767766004373, guid: 469ef270088c30d499ca92f137fb16aa, type: 3}
   window_photoshop_prefab: {fileID: 5526278223078399678, guid: 4570a9d1de7c1f54e898fe9b557e10a0, type: 3}
   carrot_btn_prefab: {fileID: 3002890018135523355, guid: 784c412c7c4cc1443b97d64918aca0c5, type: 3}
+  WindowAdsPrefab: {fileID: 4130616753246380972, guid: 323f4a95b1b891648877a29598eb288d, type: 3}
   icon_carrot: {fileID: 21300000, guid: b63a8f4bccedbd24b9953bf74ea47451, type: 3}
   icon_carrot_all_category: {fileID: 21300000, guid: 5d155587204a0194cb1e4c182869be45, type: 3}
   icon_carrot_app: {fileID: 21300000, guid: 56eda39d357752945af264dde61b3ced, type: 3}
@@ -430,7 +432,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   icon: {fileID: 21300000, guid: 9bd1e7727a244544ab15ee615563fbe3, type: 3}
   sp_lang_default_en: {fileID: 21300000, guid: fd3ddd56f67037743944df25913247a7, type: 3}
-  s_data_json_list_lang_offline: 
 --- !u!114 &1069686049
 MonoBehaviour:
   m_ObjectHideFlags: 0

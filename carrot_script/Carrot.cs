@@ -27,7 +27,7 @@ namespace Carrot
         [Header("Config Server")]
         public string mainhost = "https://carrotstore.web.app";
         public string key_api_rest_firestore = "";
-        public string key_api_google_location_map= "";
+        public string key_api_google_location_map = "";
         public string[] list_url_config;
         [Tooltip("Không bao gồm phần mở rộng (.json) và file phải nằm trong thư mục Resources")]
         public string FileNameLangApp = "";
@@ -75,7 +75,7 @@ namespace Carrot
         public Setting_Option setting_vibrate = Setting_Option.Hide;
         public Setting_Option setting_soundtrack = Setting_Option.Hide;
         public Setting_Option setting_theme = Setting_Option.Hide;
-        public Setting_Option SettingSupport= Setting_Option.Hide;
+        public Setting_Option SettingSupport = Setting_Option.Hide;
 
         [Header("Carrot Obj")]
         public Carrot_lang lang;
@@ -97,6 +97,7 @@ namespace Carrot
         public GameObject window_input_prefab;
         public GameObject window_photoshop_prefab;
         public GameObject carrot_btn_prefab;
+        public GameObject WindowAdsPrefab;
 
         [Header("Icon sprite")]
         public Sprite icon_carrot;
@@ -184,7 +185,7 @@ namespace Carrot
             this.lang.On_load(this);
             this.user.On_load(this);
             this.camera_pro.On_load();
-            if(this.index_inapp_remove_ads!=-1||this.index_inapp_buy_bk_music!=-1) this.shop.On_load(this);
+            if (this.index_inapp_remove_ads != -1 || this.index_inapp_buy_bk_music != -1) this.shop.On_load(this);
             this.shop.onCarrotPaySuccess += this.carrot_by_success;
             this.shop.onCarrotRestoreSuccess += this.carrot_restore_success;
 
@@ -209,7 +210,7 @@ namespace Carrot
             this.Get_Config();
         }
 
-        private void Get_Config(UnityAction act_done=null)
+        private void Get_Config(UnityAction act_done = null)
         {
             this.Get_Data(this.random(this.list_url_config), (data) =>
             {
@@ -237,7 +238,7 @@ namespace Carrot
         public void clear_contain(Transform area_body) { foreach (Transform child in area_body) { Destroy(child.gameObject); } }
         public void show_login() { this.user.show_login(); }
         public void show_user_register() { this.user.show_user_register(); }
-        public string L(string s_key, string s_default = ""){ return lang.Val(s_key,s_default); }
+        public string L(string s_key, string s_default = "") { return lang.Val(s_key, s_default); }
         public Carrot_tool get_tool() { return this.tool; }
 
         private void Update()
@@ -315,7 +316,7 @@ namespace Carrot
 
         private Carrot_Window_Msg Create_msg()
         {
-            GameObject window_msg = this.create_window(this.window_msg_prefab,this.NameTransfomFather);
+            GameObject window_msg = this.create_window(this.window_msg_prefab, this.NameTransfomFather);
             window_msg.name = "Window Msg";
             window_msg.GetComponent<Carrot_Window_Msg>().load(this);
             return window_msg.GetComponent<Carrot_Window_Msg>();
@@ -323,7 +324,7 @@ namespace Carrot
 
         public Carrot_Window_Msg Show_msg(string s_msg)
         {
-            msg= this.Create_msg();
+            msg = this.Create_msg();
             msg.set_msg(s_msg);
             msg.update_btns_gamepad_console();
             return msg;
@@ -331,7 +332,7 @@ namespace Carrot
 
         public Carrot_Window_Msg Show_msg(string s_title, string s_msg)
         {
-            msg= this.Show_msg(s_msg);
+            msg = this.Show_msg(s_msg);
             msg.set_title(s_title);
             return msg;
         }
@@ -499,16 +500,16 @@ namespace Carrot
                 this.get_tool().delete_file("music_bk");
                 if (model_app == ModelApp.Develope) Debug.Log("Delete All Data Success!!!");
                 this.msg = this.Show_msg(L("delete_all_data", "Clear all application data"), L("delete_all_data_success", "Erase all settings settings and app data successfully!"), Msg_Icon.Success);
-                this.delay_function(2f, ()=>this.Restart_app());
+                this.delay_function(2f, () => this.Restart_app());
             });
         }
 
         private void Restart_app()
         {
             this.is_ready = false;
-            if(this.msg!=null) this.msg.close();
+            if (this.msg != null) this.msg.close();
             close_all_window();
-            if(this.act_after_delete_all_data!=null)
+            if (this.act_after_delete_all_data != null)
                 this.act_after_delete_all_data.Invoke();
             else
                 this.Load_Carrot(this.act_check_exit_app);
@@ -700,7 +701,7 @@ namespace Carrot
             act_func();
         }
 
-        public GameObject create_window(GameObject obj_prefab,string NameTrFather="Canvas")
+        public GameObject create_window(GameObject obj_prefab, string NameTrFather = "Canvas")
         {
             GameObject obj_window = Instantiate(obj_prefab);
             obj_window.name = "Carrot Window";
@@ -721,7 +722,7 @@ namespace Carrot
         {
             this.NameTransfomFather = nameCanvas;
         }
-        
+
         public Carrot_Box Create_Box()
         {
             GameObject box_window = this.create_window(this.window_box_prefab, NameTransfomFather);
@@ -781,7 +782,7 @@ namespace Carrot
                 Carrot_Box_Item item_setting_top_player = box_setting.create_item("top_player");
                 item_setting_top_player.set_icon(this.game.icon_top_player);
                 item_setting_top_player.set_title(lang.Val("top_player", "Player rankings"));
-                item_setting_top_player.set_tip(lang.Val("top_player_tip","User score leaderboard"));
+                item_setting_top_player.set_tip(lang.Val("top_player_tip", "User score leaderboard"));
                 item_setting_top_player.set_act(this.game.Show_List_Top_player);
                 item_setting_top_player.set_lang_data("top_player", "top_player_tip");
             }
@@ -798,7 +799,8 @@ namespace Carrot
 
             if (this.index_inapp_remove_ads != -1)
             {
-                if(PlayerPrefs.GetInt("is_ads",0)==0){
+                if (PlayerPrefs.GetInt("is_ads", 0) == 0)
+                {
                     this.item_setting_ads = box_setting.create_item("remove_ads");
                     this.item_setting_ads.set_icon(this.sp_icon_removeads);
                     this.item_setting_ads.set_title(lang.Val("remove_ads", "Remove Ads"));
@@ -982,12 +984,12 @@ namespace Carrot
         private void Show_Support()
         {
             play_sound_click();
-            Carrot_Box box_support = Create_Box(L("support", "Support"),icon_carrot_support);
+            Carrot_Box box_support = Create_Box(L("support", "Support"), icon_carrot_support);
 
             Carrot_Box_Item item_donnation = box_support.create_item();
             item_donnation.set_icon(icon_carrot_donation);
             item_donnation.set_title("Donate");
-            item_donnation.set_tip(L("donate_tip","Please contribute to the cost of maintaining the server and developing tools to serve everyone"));
+            item_donnation.set_tip(L("donate_tip", "Please contribute to the cost of maintaining the server and developing tools to serve everyone"));
             item_donnation.set_act(() =>
             {
                 play_sound_click();
@@ -1027,7 +1029,7 @@ namespace Carrot
             Carrot_Box_Item item_x = box_support.create_item();
             item_x.set_icon(this.icon_carrot_cancel);
             item_x.set_title("X");
-            item_x.set_tip(L("x_dev","Follow the developer's news page on social network X"));
+            item_x.set_tip(L("x_dev", "Follow the developer's news page on social network X"));
             item_x.set_act(() =>
             {
                 play_sound_click();
@@ -1039,12 +1041,12 @@ namespace Carrot
         {
             if (this.is_sound)
             {
-                if(item_status_sound!=null) item_status_sound.set_icon(this.sp_icon_sound_off);
+                if (item_status_sound != null) item_status_sound.set_icon(this.sp_icon_sound_off);
                 PlayerPrefs.SetInt("is_sound", 1);
                 this.is_sound = false;
                 if (this.type_app == TypeApp.Game)
                 {
-                    if(this.game.get_audio_source_bk()!=null) this.game.get_audio_source_bk().Stop();
+                    if (this.game.get_audio_source_bk() != null) this.game.get_audio_source_bk().Stop();
                 }
             }
             else
@@ -1090,12 +1092,14 @@ namespace Carrot
                 this.box_setting.set_title(lang.Val("setting", "Setting"));
                 foreach (Transform tr in this.box_setting.area_all_item)
                 {
-                    if(tr.gameObject!=null){
-                        if (tr.gameObject.GetComponent<Carrot_Box_Item>()) {
+                    if (tr.gameObject != null)
+                    {
+                        if (tr.gameObject.GetComponent<Carrot_Box_Item>())
+                        {
                             tr.gameObject.GetComponent<Carrot_Box_Item>().on_load(this);
                             tr.gameObject.GetComponent<Carrot_Box_Item>().load_lang_data();
                         }
-                    }                    
+                    }
                 }
             });
         }
@@ -1160,7 +1164,7 @@ namespace Carrot
             {
                 if (this.type_control != TypeControl.None)
                 {
-                    if(this.list_Window[this.list_Window.Count - 1] != null)
+                    if (this.list_Window[this.list_Window.Count - 1] != null)
                     {
                         Carrot_UI window_last = this.list_Window[this.list_Window.Count - 1].GetComponent<Carrot_UI>();
                         if (window_last != null)
@@ -1176,6 +1180,11 @@ namespace Carrot
                 if (this.act_after_close_all_box != null) this.act_after_close_all_box();
             }
             return is_close_success;
+        }
+
+        public void CloseLastWindow()
+        {
+            this.close_window(this.list_Window.Count - 1);
         }
 
         public void remove_window(int index_window)
@@ -1312,7 +1321,7 @@ namespace Carrot
 
         private void Show_box_dev_info()
         {
-            Carrot_Box box_dev = this.Create_Box("Info",user.icon_user_info);
+            Carrot_Box box_dev = this.Create_Box("Info", user.icon_user_info);
 
             FieldInfo[] fields = GetType().GetFields(BindingFlags.Instance | BindingFlags.Public);
             foreach (FieldInfo field in fields)
@@ -1322,106 +1331,12 @@ namespace Carrot
                     object value = field.GetValue(this);
                     Carrot_Box_Item item_info = box_dev.create_item();
                     item_info.set_title(field.Name);
-                    if(value!=null)
+                    if (value != null)
                         item_info.set_tip(value.ToString());
                     else
                         item_info.set_tip("Null");
                 }
             }
-        }
-
-        [ContextMenu("Set public Goople play")]
-        public void Set_public_Gooogle_play()
-        {
-            this.store_public = Store.Google_Play;
-            this.os_app = OS.Android;
-            this.type_rate = TypeRate.Market_Android;
-            this.pay_app = PayApp.UnitySDKPay;
-        }
-
-        [ContextMenu("Set public Amazon")]
-        public void Set_public_Amazon()
-        {
-            this.store_public = Store.Amazon_app_store;
-            this.os_app = OS.Android;
-            this.type_rate = TypeRate.Amazon_app_store;
-            this.pay_app = PayApp.UnitySDKPay;
-        }
-
-        [ContextMenu("Set public Huawei")]
-        public void Set_public_Huawei()
-        {
-            this.store_public = Store.Huawei_store;
-            this.os_app = OS.Android;
-            this.type_rate = TypeRate.Market_Android;
-            this.pay_app = PayApp.CarrotPay;
-        }
-
-        [ContextMenu("Set public Uptodown")]
-        public void Set_public_Uptodown()
-        {
-            this.store_public = Store.Uptodown;
-            this.os_app = OS.Android;
-            this.type_rate = TypeRate.Market_Android;
-            this.pay_app = PayApp.CarrotPay;
-        }
-
-        [ContextMenu("Set public Microsoft Store")]
-        public void Set_public_Microsoft_Store()
-        {
-#if UNITY_EDITOR
-            PlayerSettings.fullScreenMode = FullScreenMode.FullScreenWindow;
-#endif
-            this.store_public = Store.Microsoft_Store;
-            this.os_app = OS.Window;
-            this.type_rate = TypeRate.Ms_Windows_Store;
-            this.pay_app = PayApp.UnitySDKPay;
-        }
-
-        [ContextMenu("Set public Itch(Mobile Android)")]
-        public void Set_public_Itch_Android()
-        {
-            this.store_public = Store.Itch;
-            this.os_app = OS.Android;
-            this.type_rate = TypeRate.Market_Android;
-            this.pay_app = PayApp.CarrotPay;
-        }
-
-        [ContextMenu("Set public Itch(Mobile Ios)")]
-        public void Set_public_Itch_Ios()
-        {
-            this.store_public = Store.Itch;
-            this.os_app = OS.Ios;
-            this.type_rate = TypeRate.Market_Android;
-            this.pay_app = PayApp.CarrotPay;
-        }
-
-        [ContextMenu("Set public Itch(Web)")]
-        public void Set_public_Itch_Web()
-        {
-#if UNITY_EDITOR
-            PlayerSettings.defaultWebScreenWidth = 1024;
-            PlayerSettings.defaultWebScreenHeight = 640;
-#endif
-
-            this.store_public = Store.Itch;
-            this.os_app = OS.Web;
-            this.type_rate = TypeRate.Ms_Windows_Store;
-            this.pay_app = PayApp.CarrotPay;
-        }
-
-        [ContextMenu("Set public Itch(Desktop)")]
-        public void Set_public_Itch_Desktop()
-        {
-#if UNITY_EDITOR
-            PlayerSettings.fullScreenMode = FullScreenMode.Windowed;
-            PlayerSettings.defaultScreenWidth = 1024;
-            PlayerSettings.defaultScreenHeight = 620;
-#endif
-            this.store_public = Store.Itch;
-            this.os_app = OS.Window;
-            this.type_rate = TypeRate.Ms_Windows_Store;
-            this.pay_app = PayApp.CarrotPay;
         }
 
         public string random(string[] list)
@@ -1434,19 +1349,19 @@ namespace Carrot
             return list[Random.Range(0, list.Count)].ToString();
         }
 
-        public void Get_Data(string url, UnityAction<string> done_act, UnityAction<string> fail_act=null)
+        public void Get_Data(string url, UnityAction<string> done_act, UnityAction<string> fail_act = null)
         {
             StartCoroutine(this.LoadData(url, done_act, fail_act));
         }
 
-        private IEnumerator LoadData(string url, UnityAction<string> done_act, UnityAction<string> fail_act=null)
+        private IEnumerator LoadData(string url, UnityAction<string> done_act, UnityAction<string> fail_act = null)
         {
             using UnityWebRequest www = UnityWebRequest.Get(url);
             www.SendWebRequest();
 
             while (!www.isDone)
             {
-                float progress = www.downloadProgress;
+                //float progress = www.downloadProgress;
                 //Debug.Log($"Download: {progress * 100}%");
                 yield return null;
             }
@@ -1460,6 +1375,12 @@ namespace Carrot
                 string jsonData = www.downloadHandler.text;
                 done_act?.Invoke(jsonData);
             }
+        }
+
+        [ContextMenu("ShowAds")]
+        public void ShowAds()
+        {
+            carrot_list_app.ShowAds();
         }
     }
 }
