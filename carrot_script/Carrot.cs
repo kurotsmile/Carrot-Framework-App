@@ -1372,7 +1372,7 @@ namespace Carrot
             }
             else
             {
-                string jsonData = www.downloadHandler.text;
+                string jsonData = www.downloadHandler.text; 
                 done_act?.Invoke(jsonData);
             }
         }

@@ -30,7 +30,17 @@ namespace Carrot
             this.objBtnClsoe.SetActive(false);
             this.objPanelTimer.SetActive(true);
             IDictionary data = Json.Deserialize(sData) as IDictionary;
-            apps = data["all_item"] as IList;
+            IList listApp = data["all_item"] as IList;
+            string s_key_store_public = this.carrot.store_public.ToString().ToLower();
+            apps = Json.Deserialize("[]") as IList;
+            for (int i = 0; i < listApp.Count; i++)
+            {
+                IDictionary appItem = listApp[i] as IDictionary;
+                if (appItem[s_key_store_public] != null)
+                {
+                    if (appItem[s_key_store_public].ToString() != "") apps.Add(appItem);
+                }
+            }
             List<IDictionary> listAppShow = GetCircularRange(apps, this.indexSliderShow, 5);
             LoadDataSlider(listAppShow);
             this.anim.Play("CarrotAds_Load");
@@ -86,6 +96,7 @@ namespace Carrot
 
         public void BtnNextSlider()
         {
+            this.anim.Play("CarrotAds_Next");
             carrot.play_sound_click();
             indexSliderShow++;
             List<IDictionary> listAppShow = GetCircularRange(apps, this.indexSliderShow, 5);
@@ -94,6 +105,7 @@ namespace Carrot
 
         public void BtnNextTwoSlider()
         {
+            this.anim.Play("CarrotAds_Next");
             carrot.play_sound_click();
             indexSliderShow += 2;
             List<IDictionary> listAppShow = GetCircularRange(apps, this.indexSliderShow, 5);
@@ -102,6 +114,7 @@ namespace Carrot
 
         public void BtnPrevSlider()
         {
+            this.anim.Play("CarrotAds_Next");
             carrot.play_sound_click();
             if (indexSliderShow < 0) indexSliderShow = apps.Count - 1;
             indexSliderShow--;
@@ -111,6 +124,7 @@ namespace Carrot
 
         public void BtnPrevTwoSlider()
         {
+            this.anim.Play("CarrotAds_Next");
             carrot.play_sound_click();
             if (indexSliderShow < 0) indexSliderShow = apps.Count - 1;
             indexSliderShow -= 2;
