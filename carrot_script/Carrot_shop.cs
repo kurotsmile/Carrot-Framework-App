@@ -137,6 +137,8 @@ namespace Carrot
             this.carrot.hide_loading();
             this.onCarrotPaySuccess.Invoke(product.definition.id);
             this.carrot.log($"Purchase Complete - Product: {product.definition.id}");
+            if (product.definition.type == ProductType.Consumable) return PurchaseProcessingResult.Pending;
+
             return PurchaseProcessingResult.Complete;
         }
 
