@@ -122,7 +122,7 @@ namespace Carrot
         private void Load_list_lang_by_data(IList all_item)
         {
             this.carrot.hide_loading();
-            this.DataLangApp_en = this.DataLangApp["en"] as IDictionary;
+            if(this.DataLangApp!=null) this.DataLangApp_en = this.DataLangApp["en"] as IDictionary;
             if (this.box_lang != null) this.box_lang.close();
             this.box_lang = this.carrot.Create_Box(this.carrot.lang.Val("sel_lang_app", "Choose your language and country"), this.icon);
             for (int i = 0; i < all_item.Count; i++)
