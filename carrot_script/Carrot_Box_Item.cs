@@ -9,6 +9,7 @@ namespace Carrot
         box_nomal,
         box_value_txt,
         box_value_input,
+        box_value_textarea,
         box_number_input,
         box_email_input,
         box_password_input,
@@ -24,7 +25,9 @@ namespace Carrot
         public Text txt_tip;
         public Text txt_val;
         public Text txt_placeholder_tip;
+        public Text txt_placeholder_tip_area;
         public InputField inp_val;
+        public InputField textarea_val;
         public Dropdown dropdown_val;
         public Slider slider_val;
         public Transform area_all_btn_extension;
@@ -54,10 +57,11 @@ namespace Carrot
 
             if (type == Box_Item_Type.box_nomal)
             {
-                this.txt_val.gameObject.SetActive(false);
-                this.inp_val.gameObject.SetActive(false);
-                this.dropdown_val.gameObject.SetActive(false);
-                this.slider_val.gameObject.SetActive(false);
+                txt_val.gameObject.SetActive(false);
+                inp_val.gameObject.SetActive(false);
+                dropdown_val.gameObject.SetActive(false);
+                slider_val.gameObject.SetActive(false);
+                textarea_val.gameObject.SetActive(false);
                 r.offsetMin = new Vector2(r.offsetMin.x, -50.0f);
             }
             else
@@ -109,7 +113,19 @@ namespace Carrot
                     this.slider_val.gameObject.SetActive(true);
                     Destroy(this.GetComponent<Button>());
                 }
-                r.offsetMin = new Vector2(r.offsetMin.x, -100.0f);
+
+                if (type == Box_Item_Type.box_value_textarea)
+                {
+                    textarea_val.gameObject.SetActive(true);
+                    this.txt_placeholder_tip_area.text = this.carrot.lang.Val("inp_tip", "Enter your data here ...");
+                    Destroy(this.GetComponent<Button>());
+                    r.offsetMin = new Vector2(r.offsetMin.x, -200.0f);
+                }
+                else
+                {
+                    r.offsetMin = new Vector2(r.offsetMin.x, -100.0f);
+                }
+                
             }
         }
 
@@ -211,21 +227,12 @@ namespace Carrot
             this.check_type();
         }
 
-        public void set_type(string s_type)
-        {
-            if (s_type == "1") this.type = Box_Item_Type.box_value_input;
-            if (s_type == "3") this.type = Box_Item_Type.box_password_input;
-            if (s_type == "4") this.type = Box_Item_Type.box_number_input;
-            if (s_type == "5") this.type = Box_Item_Type.box_email_input;
-            if (s_type == "2") this.type = Box_Item_Type.box_value_dropdown;
-            this.check_type();
-        }
-
         public void set_val(string s_val)
         {
             if(this.type==Box_Item_Type.box_value_txt) this.txt_val.text = s_val;
             if(this.type==Box_Item_Type.box_value_input) this.inp_val.text = s_val;
-            if(this.type==Box_Item_Type.box_password_input) this.inp_val.text = s_val;
+            if(this.type==Box_Item_Type.box_value_textarea) this.textarea_val.text = s_val;
+            if (this.type == Box_Item_Type.box_password_input) this.inp_val.text = s_val;
             if(this.type==Box_Item_Type.box_number_input) this.inp_val.text = s_val;
             if(this.type==Box_Item_Type.box_email_input) this.inp_val.text = s_val;
             if (this.type == Box_Item_Type.box_value_dropdown) this.dropdown_val.value = int.Parse(s_val);
@@ -236,6 +243,7 @@ namespace Carrot
         {
             if (this.type == Box_Item_Type.box_value_txt) return this.txt_val.text;
             if (this.type == Box_Item_Type.box_value_input) return this.inp_val.text;
+            if (this.type == Box_Item_Type.box_value_textarea) return this.textarea_val.text;
             if (this.type == Box_Item_Type.box_password_input) return this.inp_val.text;
             if (this.type == Box_Item_Type.box_number_input) return this.inp_val.text;
             if (this.type == Box_Item_Type.box_email_input) return this.inp_val.text;

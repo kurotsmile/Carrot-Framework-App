@@ -474,7 +474,7 @@ namespace Carrot
             return box_search;
         }
 
-        public Carrot_Window_Input Show_input(string s_title, string s_tip = "", string s_txt = "", Window_Input_value_Type type_val = Window_Input_value_Type.input_field)
+        public Carrot_Window_Input Show_input(string s_title, string s_tip = "", string s_txt = "", Window_Input_value_Type type_val = Window_Input_value_Type.input_field,UnityAction<string> act_done = null)
         {
             GameObject obj_box_inp = this.create_window(this.window_input_prefab);
             Carrot_Window_Input box_inp = obj_box_inp.GetComponent<Carrot_Window_Input>();
@@ -484,6 +484,13 @@ namespace Carrot
             box_inp.set_tip(s_tip);
             box_inp.set_inp_type(type_val);
             box_inp.set_val(s_txt);
+            if (act_done != null)
+            {
+                box_inp.set_act_done((s_val) =>
+                {
+                    act_done(s_val);
+                });
+            }
             return box_inp;
         }
 
