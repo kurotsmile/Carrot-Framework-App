@@ -27,7 +27,7 @@ namespace Carrot
         private Carrot_Box box_shop;
 
         private string user_id_pay = "";
-        private string product_id_pay= "";
+        private string product_id_pay = "";
         private string order_id_pay = "";
         private string order_type_pay = "";
 
@@ -92,25 +92,49 @@ namespace Carrot
         }
 
         #region Unity_Pay
-        private void act_restore_unity_pay()
+private void act_restore_unity_pay()
+{
+    try
+    {
+        #if UNITY_WSA
+        if (Application.platform == RuntimePlatform.WSAPlayer)
         {
-            if (Application.platform == RuntimePlatform.WSAPlayerX86 || Application.platform == RuntimePlatform.WSAPlayerX64 || Application.platform == RuntimePlatform.WSAPlayerARM)
-            {
-                extensions.GetExtension<IMicrosoftExtensions>().RestoreTransactions();
-            }
-            else if (Application.platform == RuntimePlatform.IPhonePlayer || Application.platform == RuntimePlatform.OSXPlayer || Application.platform == RuntimePlatform.tvOS)
-            {
-
-            }
-            else if (Application.platform == RuntimePlatform.Android && StandardPurchasingModule.Instance().appStore == AppStore.GooglePlay)
-            {
-
-            }
-            else
-            {
-                this.carrot.log(Application.platform.ToString() + " is not a supported platform for the Codeless IAP restore button");
-            }
+            var microsoft = extensions.GetExtension<IMicrosoftStoreExtensions>();
+            if (microsoft != null) microsoft.RestoreTransactions();
+            else this.carrot.log("Microsoft Store extension not available");
         }
+        #elif UNITY_IOS || UNITY_TVOS || UNITY_STANDALONE_OSX
+        if (Application.platform == RuntimePlatform.IPhonePlayer || 
+            Application.platform == RuntimePlatform.OSXPlayer || 
+            Application.platform == RuntimePlatform.tvOS)
+        {
+            var apple = extensions.GetExtension<IAppleExtensions>();
+            if (apple != null) apple.RestoreTransactions((result, message) =>
+            {
+                this.carrot.log("Apple restore completed. Result: " + result + " | Message: " + message);
+            });
+            else this.carrot.log("Apple extension not available");
+        }
+        #elif UNITY_ANDROID
+        if (Application.platform == RuntimePlatform.Android && 
+            StandardPurchasingModule.Instance().appStore == AppStore.GooglePlay)
+        {
+            var google = extensions.GetExtension<IGooglePlayStoreExtensions>();
+            if (google != null) google.RestoreTransactions((result, message) =>
+            {
+                this.carrot.log("Google Play restore completed. Result: " + result + " | Message: " + message);
+            });
+            else this.carrot.log("Google Play extension not available");
+        }
+        #else
+        this.carrot.log(Application.platform.ToString() + " is not a supported platform for the Codeless IAP restore button");
+        #endif
+    }
+    catch (System.Exception e)
+    {
+        this.carrot.log("Restore failed: " + e.Message);
+    }
+}
 
 
         void OnTransactionsRestored(bool success)
@@ -141,7 +165,7 @@ namespace Carrot
             {
                 m_StoreController.ConfirmPendingPurchase(args.purchasedProduct);
                 return PurchaseProcessingResult.Pending;
-            } 
+            }
 
             return PurchaseProcessingResult.Complete;
         }
@@ -173,12 +197,12 @@ namespace Carrot
             string user_id = carrot.user.get_id_user_login();
             string user_lang = carrot.lang.Get_key_lang();
             string user_name = "";
-           
+
             if (user_id != "")
             {
                 user_lang = carrot.user.get_lang_user_login();
                 user_name = carrot.user.get_data_user_login("name");
-            }  
+            }
             else
                 user_id = SystemInfo.deviceUniqueIdentifier;
 
@@ -193,7 +217,7 @@ namespace Carrot
 
             string name_product = defaultDescription["title"].ToString();
 
-            box_shop=this.carrot.Create_Box(name_product,this.carrot.icon_carrot_buy);
+            box_shop = this.carrot.Create_Box(name_product, this.carrot.icon_carrot_buy);
 
             Carrot_Box_Btn_Item btn_history = box_shop.create_btn_menu_header(carrot.sp_icon_restore);
             btn_history.set_act(() => Show_history_pay(user_id));
@@ -206,22 +230,22 @@ namespace Carrot
             Carrot_Box_Item item_price = box_shop.create_item("item_price");
             item_price.set_icon(carrot.icon_carrot_price);
             item_price.set_title("Price of product");
-            item_price.set_tip(price_product+"$");
+            item_price.set_tip(price_product + "$");
 
-            Carrot_Box_Item item_type= box_shop.create_item("item_type");
+            Carrot_Box_Item item_type = box_shop.create_item("item_type");
             item_type.set_icon(carrot.icon_carrot_all_category);
             item_type.set_title("Type");
-            if (this.order_type_pay== "0")
+            if (this.order_type_pay == "0")
                 item_type.set_tip("Consumable");
             else
                 item_type.set_tip("No Consumable");
 
             var url_paypal = carrot.mainhost + "?page=pay&id=" + data_product["id"].ToString() + "&title=" + defaultDescription["title"].ToString() + "&description=" + defaultDescription["description"].ToString();
-            url_paypal += "&price="+price_product;
-            url_paypal += "&user_id="+user_id;
-            url_paypal += "&user_lang="+user_lang;
-            url_paypal += "&type="+order_type_pay;
-            url_paypal += "&id_order="+order_id_pay;
+            url_paypal += "&price=" + price_product;
+            url_paypal += "&user_id=" + user_id;
+            url_paypal += "&user_lang=" + user_lang;
+            url_paypal += "&type=" + order_type_pay;
+            url_paypal += "&id_order=" + order_id_pay;
             if (user_name != "") url_paypal += "&user_name=" + user_name;
 
             Carrot_Box_Btn_Panel panel_btn = box_shop.create_panel_btn();
@@ -234,7 +258,7 @@ namespace Carrot
 
             Carrot_Button_Item btn_share = panel_btn.create_btn();
             btn_share.set_icon_white(carrot.sp_icon_share);
-            btn_share.set_label(this.carrot.lang.Val("share","Share"));
+            btn_share.set_label(this.carrot.lang.Val("share", "Share"));
             btn_share.set_label_color(Color.white);
             btn_share.set_bk_color(carrot.color_highlight);
             btn_share.set_act_click(() => carrot.show_share(url_paypal, "Ask someone else to buy this product for you!"));
@@ -248,7 +272,7 @@ namespace Carrot
 
             Carrot_Button_Item btn_cancel = panel_btn.create_btn();
             btn_cancel.set_icon_white(carrot.icon_carrot_cancel);
-            btn_cancel.set_label(this.carrot.lang.Val("cancel","Cancel"));
+            btn_cancel.set_label(this.carrot.lang.Val("cancel", "Cancel"));
             btn_cancel.set_label_color(Color.white);
             btn_cancel.set_bk_color(carrot.color_highlight);
             btn_cancel.set_act_click(() => Close_box_carrot_pay());
@@ -261,7 +285,7 @@ namespace Carrot
             carrot.show_loading();
             StructuredQuery q = new("order");
             q.Add_where("user_id", Query_OP.EQUAL, s_id_user);
-            carrot.server.Get_doc(q.ToJson(),Act_get_list_history_done,Act_server_fail);
+            carrot.server.Get_doc(q.ToJson(), Act_get_list_history_done, Act_server_fail);
         }
 
         private void Act_get_list_history_done(string s_data)
@@ -270,9 +294,9 @@ namespace Carrot
             Fire_Collection fc = new(s_data);
             if (!fc.is_null)
             {
-                Carrot_Box box_history = carrot.Create_Box("History Pay",carrot.sp_icon_restore);
+                Carrot_Box box_history = carrot.Create_Box("History Pay", carrot.sp_icon_restore);
 
-                for(int i=0;i<fc.fire_document.Length;i++)
+                for (int i = 0; i < fc.fire_document.Length; i++)
                 {
                     IDictionary data_history = fc.fire_document[i].Get_IDictionary();
                     var id_product = data_history["id_product"].ToString();
@@ -314,7 +338,7 @@ namespace Carrot
 
         private void Close_box_carrot_pay()
         {
-            if(carrot!=null) carrot.play_sound_click();
+            if (carrot != null) carrot.play_sound_click();
             product_id_pay = "";
             user_id_pay = "";
             if (box_shop != null) box_shop.close();
@@ -328,13 +352,13 @@ namespace Carrot
 
         private void OnApplicationFocus(bool hasFocus)
         {
-            if (hasFocus==true&&this.product_id_pay!="") Check_pay();
+            if (hasFocus == true && this.product_id_pay != "") Check_pay();
         }
 
         private void Check_pay()
         {
             this.carrot.show_loading();
-            Debug.Log("Check pay (" + this.product_id_pay + " - "+this.user_id_pay+") from server...");
+            Debug.Log("Check pay (" + this.product_id_pay + " - " + this.user_id_pay + ") from server...");
             StructuredQuery q = new("order");
             if (this.order_type_pay == "1")
             {
@@ -370,9 +394,9 @@ namespace Carrot
         {
             carrot.show_loading();
             string user_id = carrot.user.get_id_user_login();
-            if (user_id=="") user_id = SystemInfo.deviceUniqueIdentifier;
+            if (user_id == "") user_id = SystemInfo.deviceUniqueIdentifier;
             StructuredQuery q = new("order");
-            q.Add_where("user_id",Query_OP.EQUAL,user_id);
+            q.Add_where("user_id", Query_OP.EQUAL, user_id);
             carrot.server.Get_doc(q.ToJson(), Act_restore_carrot_pay_done, Act_server_fail);
         }
 
@@ -386,7 +410,7 @@ namespace Carrot
                 this.OnTransactionsRestored(true);
                 IList list_inapp_restore = (IList)Json.Deserialize("[]");
 
-                for(int i = 0; i < fc.fire_document.Length; i++)
+                for (int i = 0; i < fc.fire_document.Length; i++)
                 {
                     IDictionary data_in_app = fc.fire_document[i].Get_IDictionary();
                     if (data_in_app["status"].ToString() == "COMPLETED")
