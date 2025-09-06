@@ -7,19 +7,14 @@ using UnityEngine.Purchasing.Extension;
 
 namespace Carrot
 {
-    interface Carrot_shop_event
-    {
-        void Carrot_by_success(string s_id_product);
-        void Carrot_restore_success(string[] arr_id);
-    }
-
     public class Carrot_shop : MonoBehaviour, IDetailedStoreListener
     {
-        IStoreController m_StoreController;
-        IExtensionProvider extensions;
+        private IStoreController m_StoreController;
+        private IExtensionProvider extensions;
 
         private List<string> list_id_product;
         private Carrot carrot;
+
         public UnityAction<string> onCarrotPaySuccess;
         public UnityAction<string[]> onCarrotRestoreSuccess;
 
@@ -31,6 +26,7 @@ namespace Carrot
         private string order_id_pay = "";
         private string order_type_pay = "";
 
+        // --- Load IAP ---
         public void On_load(Carrot carrot)
         {
             this.carrot = carrot;
@@ -38,9 +34,8 @@ namespace Carrot
 
             if (this.carrot.pay_app == PayApp.UnitySDKPay)
             {
+                // Catalog file phải nằm ở Assets/Resources/BillingCatalog.json
                 var catalog = ProductCatalog.LoadDefaultCatalog();
-
-
                 var builder = ConfigurationBuilder.Instance(StandardPurchasingModule.Instance());
 
                 if (catalog.allProducts.Count > 0)
@@ -52,12 +47,19 @@ namespace Carrot
                     }
                     UnityPurchasing.Initialize(this, builder);
                 }
+                else
+                {
+                    this.carrot.log("BillingCatalog.json empty or not found!");
+                }
             }
-
-            if (this.carrot.pay_app == PayApp.CarrotPay)
+            else if (this.carrot.pay_app == PayApp.CarrotPay)
             {
                 var asset = Resources.Load("IAPProductCatalog") as TextAsset;
-                Debug.Log(asset);
+                if (asset == null)
+                {
+                    Debug.LogError("IAPProductCatalog.json not found in Resources!");
+                    return;
+                }
                 IDictionary data_inapp = (IDictionary)Json.Deserialize(asset.text);
                 list_product = (IList)data_inapp["products"];
 
@@ -68,6 +70,7 @@ namespace Carrot
             }
         }
 
+        // --- Buy product ---
         public void buy_product(int index_p)
         {
             this.carrot.play_sound_click();
@@ -77,11 +80,17 @@ namespace Carrot
             }
             else
             {
+                if (m_StoreController == null)
+                {
+                    this.carrot.log("StoreController not initialized!");
+                    return;
+                }
                 this.carrot.show_loading();
                 m_StoreController.InitiatePurchase(this.list_id_product[index_p]);
             }
         }
 
+        // --- Restore purchases ---
         public void restore_product()
         {
             this.carrot.play_sound_click();
@@ -92,103 +101,106 @@ namespace Carrot
         }
 
         #region Unity_Pay
-private void act_restore_unity_pay()
-{
-    try
-    {
-        #if UNITY_WSA
-        if (Application.platform == RuntimePlatform.WSAPlayer)
-        {
-            var microsoft = extensions.GetExtension<IMicrosoftStoreExtensions>();
-            if (microsoft != null) microsoft.RestoreTransactions();
-            else this.carrot.log("Microsoft Store extension not available");
-        }
-        #elif UNITY_IOS || UNITY_TVOS || UNITY_STANDALONE_OSX
-        if (Application.platform == RuntimePlatform.IPhonePlayer || 
-            Application.platform == RuntimePlatform.OSXPlayer || 
-            Application.platform == RuntimePlatform.tvOS)
-        {
-            var apple = extensions.GetExtension<IAppleExtensions>();
-            if (apple != null) apple.RestoreTransactions((result, message) =>
-            {
-                this.carrot.log("Apple restore completed. Result: " + result + " | Message: " + message);
-            });
-            else this.carrot.log("Apple extension not available");
-        }
-        #elif UNITY_ANDROID
-        if (Application.platform == RuntimePlatform.Android && 
-            StandardPurchasingModule.Instance().appStore == AppStore.GooglePlay)
-        {
-            var google = extensions.GetExtension<IGooglePlayStoreExtensions>();
-            if (google != null) google.RestoreTransactions((result, message) =>
-            {
-                this.carrot.log("Google Play restore completed. Result: " + result + " | Message: " + message);
-            });
-            else this.carrot.log("Google Play extension not available");
-        }
-        #else
-        this.carrot.log(Application.platform.ToString() + " is not a supported platform for the Codeless IAP restore button");
-        #endif
-    }
-    catch (System.Exception e)
-    {
-        this.carrot.log("Restore failed: " + e.Message);
-    }
-}
 
+        private void act_restore_unity_pay()
+        {
+            try
+            {
+#if UNITY_WSA
+                if (Application.platform == RuntimePlatform.WSAPlayer)
+                {
+                    var microsoft = extensions.GetExtension<IMicrosoftStoreExtensions>();
+                    if (microsoft != null) microsoft.RestoreTransactions();
+                    else this.carrot.log("Microsoft Store extension not available");
+                }
+#elif UNITY_IOS || UNITY_TVOS || UNITY_STANDALONE_OSX
+                var apple = extensions.GetExtension<IAppleExtensions>();
+                if (apple != null)
+                {
+                    apple.RestoreTransactions((result, message) =>
+                    {
+                        this.carrot.log("Apple restore completed. Result: " + result + " | Message: " + message);
+                    });
+                }
+                else this.carrot.log("Apple extension not available");
+#elif UNITY_ANDROID
+                if (StandardPurchasingModule.Instance().appStore == AppStore.GooglePlay)
+                {
+                    var google = extensions.GetExtension<IGooglePlayStoreExtensions>();
+                    if (google != null)
+                    {
+                        google.RestoreTransactions((result, message) =>
+                        {
+                            this.carrot.log("Google Play restore completed. Result: " + result + " | Message: " + message);
+                        });
+                    }
+                    else this.carrot.log("Google Play extension not available");
+                }
+#else
+                this.carrot.log(Application.platform.ToString() + " not supported restore");
+#endif
+            }
+            catch (System.Exception e)
+            {
+                this.carrot.log("Restore failed: " + e.Message);
+            }
+        }
 
         void OnTransactionsRestored(bool success)
         {
             if (success)
-                this.carrot.Show_msg(this.carrot.lang.Val("shop", "Shop"), this.carrot.lang.Val("shop_restore_success", "Successful recovery!"), Msg_Icon.Success);
+                this.carrot.Show_msg(this.carrot.lang.Val("shop", "Shop"),
+                    this.carrot.lang.Val("shop_restore_success", "Successful recovery!"), Msg_Icon.Success);
             else
-                this.carrot.Show_msg(this.carrot.lang.Val("shop", "Shop"), this.carrot.lang.Val("shop_restore_fail", "Restore failed!"), Msg_Icon.Error);
+                this.carrot.Show_msg(this.carrot.lang.Val("shop", "Shop"),
+                    this.carrot.lang.Val("shop_restore_fail", "Restore failed!"), Msg_Icon.Error);
         }
 
-        public string get_id_by_index(int index)
-        {
-            return this.list_id_product[index];
-        }
+        public string get_id_by_index(int index) => this.list_id_product[index];
 
-        void IStoreListener.OnInitializeFailed(InitializationFailureReason error)
-        {
-            this.carrot.log($"In-App Purchasing initialize failed: {error}");
-        }
-
-        PurchaseProcessingResult IStoreListener.ProcessPurchase(PurchaseEventArgs args)
-        {
-            var product = args.purchasedProduct;
-            this.carrot.hide_loading();
-            this.onCarrotPaySuccess.Invoke(product.definition.id);
-            this.carrot.log($"Purchase Complete - Product: {product.definition.id}");
-            if (product.definition.type == ProductType.Consumable)
-            {
-                m_StoreController.ConfirmPendingPurchase(args.purchasedProduct);
-                return PurchaseProcessingResult.Pending;
-            }
-
-            return PurchaseProcessingResult.Complete;
-        }
-
-        void IStoreListener.OnPurchaseFailed(Product product, PurchaseFailureReason failureReason)
-        {
-            this.carrot.hide_loading();
-            this.carrot.Show_msg(this.carrot.lang.Val("shop", "Shop"), this.carrot.lang.Val("shop_buy_fail", "Purchase failed, Please check your account balance, or try again at another time"), Msg_Icon.Error);
-        }
-
-        void IStoreListener.OnInitialized(IStoreController controller, IExtensionProvider exten)
+        // --- IAP Callbacks ---
+        public void OnInitialized(IStoreController controller, IExtensionProvider exten)
         {
             this.extensions = exten;
+            this.m_StoreController = controller;
             this.carrot.log("In-App Purchasing successfully initialized");
-            m_StoreController = controller;
+        }
+
+        public void OnInitializeFailed(InitializationFailureReason error)
+        {
+            this.carrot.log($"IAP initialize failed: {error}");
         }
 
         public void OnInitializeFailed(InitializationFailureReason error, string message)
         {
-            throw new System.NotImplementedException();
+            this.carrot.log($"IAP initialize failed: {error}, Message: {message}");
         }
-        #endregion
 
+        public PurchaseProcessingResult ProcessPurchase(PurchaseEventArgs args)
+        {
+            var product = args.purchasedProduct;
+            this.carrot.hide_loading();
+            this.onCarrotPaySuccess?.Invoke(product.definition.id);
+            this.carrot.log($"Purchase Complete - Product: {product.definition.id}");
+
+            if (product.definition.type == ProductType.Consumable)
+            {
+                m_StoreController.ConfirmPendingPurchase(product);
+                return PurchaseProcessingResult.Complete; // FIXED
+            }
+            return PurchaseProcessingResult.Complete;
+        }
+
+        public void OnPurchaseFailed(Product product, PurchaseFailureDescription failureDescription)
+        {
+            this.carrot.hide_loading();
+            this.carrot.Show_msg(this.carrot.lang.Val("shop", "Shop"),
+                this.carrot.lang.Val("shop_buy_fail", "Purchase failed, Please check your account balance, or try again later"),
+                Msg_Icon.Error);
+            this.carrot.log($"Purchase failed: {product.definition.id}, Reason: {failureDescription.reason}, Message: {failureDescription.message}");
+        }
+
+        #endregion
         #region Carrot_Paypal
         private void Check_login_and_buy_product_paypal(IDictionary data_product)
         {
@@ -441,11 +453,14 @@ private void act_restore_unity_pay()
             order_id_pay = "";
         }
 
-        public void OnPurchaseFailed(Product product, PurchaseFailureDescription failureDescription)
-        {
-            throw new System.NotImplementedException();
-        }
         #endregion
-
+        public void OnPurchaseFailed(Product product, PurchaseFailureReason failureReason)
+        {
+            carrot.log("Purchase failed: " + product.definition.id + " | Reason: " + failureReason);
+            carrot.hide_loading();
+            carrot.Show_msg(this.carrot.lang.Val("shop", "Shop"),
+            carrot.lang.Val("shop_buy_fail", "Purchase failed, Please check your account balance, or try again later\n"+failureReason),
+            Msg_Icon.Error);
+        }
     }
 }
