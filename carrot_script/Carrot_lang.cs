@@ -13,6 +13,7 @@ namespace Carrot
         private Carrot carrot;
         private string s_lang_key;
         private string s_key_lang_temp = "";
+        private string s_name_lang_temp = "";
 
         private UnityAction<string> act_after_selecting_lang = null;
         private Carrot_Box box_lang;
@@ -77,7 +78,6 @@ namespace Carrot
             }
         }
 
-
         private void Load_icon_lang()
         {
             Sprite sp_lang_icon = carrot.get_tool().get_sprite_to_playerPrefs("icon_" + this.s_lang_key) ?? this.sp_lang_default_en;
@@ -117,7 +117,6 @@ namespace Carrot
             else
                 this.Load_list_lang_by_data(DataListCountry);
         }
-
 
         private void Load_list_lang_by_data(IList all_item)
         {
@@ -347,7 +346,6 @@ namespace Carrot
                 }
             }
 
-
             if (s_key_lang == this.s_lang_key) item_lang.GetComponent<Image>().color = this.carrot.get_color_highlight_blur(50);
 
             if (Application.systemLanguage.ToString() == data_lang["name"].ToString())
@@ -359,7 +357,10 @@ namespace Carrot
                 this.tr_item_lang_systemLanguage = item_lang.transform;
             }
 
-            item_lang.set_act(() => this.Select_lang(s_key));
+            item_lang.set_act(() => {
+                this.s_name_lang_temp = data_lang["name"].ToString();
+                this.Select_lang(s_key);
+            });
             return item_lang;
         }
 
@@ -374,6 +375,11 @@ namespace Carrot
         public string Get_key_lang()
         {
             return this.s_lang_key;
+        }
+
+        public string Get_Name_Lang()
+        {
+            return PlayerPrefs.GetString("lang_name", "English");
         }
 
         public void Select_lang(string s_key)
@@ -557,6 +563,7 @@ namespace Carrot
         {
             this.carrot.hide_loading();
             PlayerPrefs.SetString("lang", s_key_new);
+            PlayerPrefs.SetString("lang_name",s_name_lang_temp);
             act_after_selecting_lang?.Invoke(s_key_new);
 
             if (this.is_load_emp_after_sel_lang)
