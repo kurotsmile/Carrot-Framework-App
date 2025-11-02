@@ -359,7 +359,10 @@ namespace Carrot
         private void On_paypal(string url_pay)
         {
             carrot.play_sound_click();
-            Application.OpenURL(url_pay);
+            string safeUrl = url_pay.Replace(" ", "%20");
+            safeUrl = System.Uri.EscapeUriString(url_pay);
+
+            Application.OpenURL(safeUrl);
         }
 
         private void OnApplicationFocus(bool hasFocus)
