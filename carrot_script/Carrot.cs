@@ -12,8 +12,8 @@ using UnityEngine.UI;
 namespace Carrot
 {
     public enum ModelApp { Publish, Develope }
-    public enum OS { Android, Window, Ios, Web, MacOs, Linux};
-    public enum Store { Google_Play, Samsung_Galaxy_Store, Microsoft_Store, Amazon_app_store, Carrot_store, Huawei_store, Itch,Uptodown};
+    public enum OS { Android, Window, Ios, Web, MacOs, Linux };
+    public enum Store { Google_Play, Samsung_Galaxy_Store, Microsoft_Store, Amazon_app_store, Carrot_store, Huawei_store, Itch, Uptodown };
     public enum TypeApp { App, Game }
     public enum TypeRate { Market_Android, Ms_Windows_Store, Amazon_app_store, Link_Share_CarrotApp }
     public enum TypeControl { None, GamePad, D_pad }
@@ -26,6 +26,7 @@ namespace Carrot
     {
         [Header("Config Server")]
         public string mainhost = "https://carrotstore.web.app";
+        public string url_worker = "https://json-worker.tranthienthanh93.workers.dev";
         public string key_api_rest_firestore = "";
         public string key_api_google_location_map = "";
         public string[] list_url_config;
@@ -454,7 +455,7 @@ namespace Carrot
         public void get_img_and_save_playerPrefs(string url, Image img, string s_key, UnityAction<Texture2D> act_done = null, UnityAction<string> act_fail = null)
         {
             if (url == "") return;
-            StartCoroutine(this.tool.get_img_form_url_and_save_playerPrefs(url, img, s_key, act_done, act_fail));
+            StartCoroutine(this.tool.get_img_form_url_and_save_playerPrefs(GetUrlFile(url), img, s_key, act_done, act_fail));
         }
 
         public void get_img(string url, UnityAction<Texture2D> act_download_img)
@@ -474,7 +475,7 @@ namespace Carrot
             return box_search;
         }
 
-        public Carrot_Window_Input Show_input(string s_title, string s_tip = "", string s_txt = "", Window_Input_value_Type type_val = Window_Input_value_Type.input_field,UnityAction<string> act_done = null)
+        public Carrot_Window_Input Show_input(string s_title, string s_tip = "", string s_txt = "", Window_Input_value_Type type_val = Window_Input_value_Type.input_field, UnityAction<string> act_done = null)
         {
             GameObject obj_box_inp = this.create_window(this.window_input_prefab);
             Carrot_Window_Input box_inp = obj_box_inp.GetComponent<Carrot_Window_Input>();
@@ -1379,7 +1380,7 @@ namespace Carrot
             }
             else
             {
-                string jsonData = www.downloadHandler.text; 
+                string jsonData = www.downloadHandler.text;
                 done_act?.Invoke(jsonData);
             }
         }
@@ -1388,6 +1389,21 @@ namespace Carrot
         public void ShowAds()
         {
             carrot_list_app.ShowAds();
+        }
+
+        public string GetUrlFile(string nameFile)
+        {
+            if (string.IsNullOrEmpty(nameFile))
+                return "";
+
+            if (nameFile.StartsWith("r2:"))
+            {
+                string realPath = nameFile.Substring(3);
+                string encoded = System.Uri.EscapeDataString(realPath);
+                return this.url_worker+"/get_file?file="+encoded;
+            }
+
+            return nameFile;
         }
     }
 }

@@ -1,6 +1,8 @@
 using Newtonsoft.Json;
 using System;
 using System.Collections;
+using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UI;
@@ -88,7 +90,6 @@ namespace Carrot
         private Carrot_Window_User_Login cur_window_user_login = null;
         public Carrot_Box_Item user_login_item_setting = null;
 
-        private IDictionary data_user_temp = null;
 
         public void On_load(Carrot carrot)
         {
@@ -112,119 +113,78 @@ namespace Carrot
 
         private void Show_user_cur_info()
         {
-            Debug.Log("Show_user_cur_info:"+this.s_data_user_login);
+            Debug.Log("Show_user_cur_info:" + this.s_data_user_login);
             IDictionary data_user = (IDictionary)Json.Deserialize(this.s_data_user_login);
             Show_info_user_by_data(data_user);
+        }
+
+        private Sprite getIconByKey(string s_key)
+        {
+            if (s_key == "name") return icon_user_name;
+            if (s_key == "avatar") return carrot.icon_carrot_avatar;
+            if (s_key == "email") return carrot.icon_carrot_mail;
+            if (s_key == "sex") return carrot.icon_carrot_sex;
+            if (s_key == "phone") return carrot.icon_carrot_phone;
+            if (s_key == "address") return carrot.icon_carrot_address;
+            if (s_key == "birthday") return carrot.sp_icon_table_color;
+            if (s_key == "status_share") return icon_user_status;
+            return carrot.icon_carrot_database;
         }
 
         public Carrot_Box Show_info_user_by_data(IDictionary data_user)
         {
             if (this.box_list != null) this.box_list.close();
-            this.box_list = this.carrot.Create_Box(this.carrot.lang.Val("acc_info", "Account Information"),this.icon_user_info);
-
-            if (data_user["avatar"] != null)
+            this.box_list = this.carrot.Create_Box(this.carrot.lang.Val("acc_info", "Account Information"), this.icon_user_info);
+            string user_id = "";
+            if (data_user["id"] != null) user_id = data_user["id"].ToString();
+            foreach (string key in data_user.Keys)
             {
-                if (data_user["avatar"].ToString() != "")
-                {
-                    string user_id = "";
-                    if (data_user["user_id"] != null)
-                    {
-                        user_id = data_user["user_id"].ToString();
-                    }
-                    else
-                    {
-                        if(data_user["id"]!=null) user_id = data_user["id"].ToString();
-                    }
+                if (data_user[key] == null) continue;
+                string s_val = data_user[key].ToString();
+                if (s_val == "") continue;
 
+                Carrot_Box_Item infoItemUeser = this.box_list.create_item("info_user_" + key);
+                infoItemUeser.set_icon(getIconByKey(key));
+                infoItemUeser.set_tip(s_val);
+                infoItemUeser.set_val(s_val);
+                infoItemUeser.set_title(key);
+
+                if (key == "avatar")
+                {
+                    infoItemUeser.set_title(carrot.lang.Val("user_avatar", "Avatar"));
                     if (user_id != "")
                     {
-                        Carrot_Box_Item info_avatar = this.box_list.create_item("info_avatar");
-                        info_avatar.set_icon(this.carrot.icon_carrot_avatar);
-                        info_avatar.set_title(this.carrot.lang.Val("user_avatar", "Avatar"));
-                        info_avatar.set_tip(data_user["avatar"].ToString());
                         Sprite sp_avatar = this.carrot.get_tool().get_sprite_to_playerPrefs("avatar_user_" + user_id);
-                        if (sp_avatar != null) info_avatar.set_icon_white(sp_avatar);
-                        else this.carrot.get_img_and_save_playerPrefs(data_user["avatar"].ToString(), info_avatar.img_icon, "avatar_user_" + user_id);
+                        if (sp_avatar != null) infoItemUeser.set_icon_white(sp_avatar);
+                        else this.carrot.get_img_and_save_playerPrefs(data_user["avatar"].ToString(), infoItemUeser.img_icon, "avatar_user_" + user_id);
                     }
                 }
-            }
-
-            Carrot_Box_Item info_name = this.box_list.create_item("info_name");
-            info_name.set_icon(this.icon_user_name);
-            info_name.set_title(this.carrot.lang.Val("user_name","Full name"));
-            if (data_user["name"] != null)
-            {
-                info_name.set_tip(data_user["name"].ToString());
-            }
-            else
-            {
-                if (this.box_list != null) this.box_list.close();
-                this.Act_logout();
-                return null;
-            }
-
-            if (data_user["email"] != null)
-            {
-                if (data_user["email"].ToString() != "")
+                if (key == "name") infoItemUeser.set_title(carrot.lang.Val("user_name", "Full name"));
+                if (key == "email") infoItemUeser.set_title("Email box (Email)");
+                if (key == "sex")
                 {
-                    Carrot_Box_Item info_email = this.box_list.create_item("info_email");
-                    info_email.set_icon(this.carrot.icon_carrot_mail);
-                    info_email.set_title("Email box (Email)");
-                    info_email.set_tip(data_user["email"].ToString());
+                    infoItemUeser.set_title(carrot.lang.Val("user_sex", "Gender"));
+                    if (s_val == "0")
+                        infoItemUeser.set_tip(this.carrot.lang.Val("user_sex_boy", "Boy"));
+                    else
+                        infoItemUeser.set_tip(this.carrot.lang.Val("user_sex_girl", "Girl"));
+                }
+                if (key == "phone") infoItemUeser.set_title(carrot.lang.Val("user_phone", "Phone number"));
+                if (key == "address") infoItemUeser.set_title(carrot.lang.Val("user_address", "Your address"));
+                if (key == "birthday") infoItemUeser.set_title(carrot.lang.Val("birthday", "Birthday"));
+                if (key == "status_share")
+                {
+                    infoItemUeser.set_title(carrot.lang.Val("user_info_status", "Information status"));
+                    if (data_user["status_share"].ToString() == "0")
+                        infoItemUeser.set_tip(this.carrot.lang.Val("user_info_status_yes", "Share information"));
+                    else
+                        infoItemUeser.set_tip(this.carrot.lang.Val("user_info_status_no", "Do not share information"));
                 }
             }
 
-            if (data_user["sex"] != null)
+            if (data_user["id"] != null)
             {
-                Carrot_Box_Item info_sex = this.box_list.create_item("info_sex");
-                info_sex.set_icon(this.carrot.icon_carrot_sex);
-                info_sex.set_title(this.carrot.lang.Val("user_sex", "Gender"));
-                if (data_user["sex"].ToString() == "0")
-                    info_sex.set_tip(this.carrot.lang.Val("user_sex_boy", "Boy"));
-                else
-                    info_sex.set_tip(this.carrot.lang.Val("user_sex_girl", "Girl"));
-            }
-
-            if (data_user["phone"]!=null)
-            {
-                if (data_user["phone"].ToString() != "")
-                {
-                    Carrot_Box_Item info_phone = this.box_list.create_item("info_phone");
-                    info_phone.set_icon(this.carrot.icon_carrot_phone);
-                    info_phone.set_title(this.carrot.lang.Val("user_phone", "Phone number"));
-                    info_phone.set_tip(data_user["phone"].ToString());
-                }
-            }
-
-            if (data_user["address"] != null)
-            {
-                IDictionary us_address = (IDictionary)data_user["address"];
-                if (us_address["name"] != null)
-                {
-                    if (us_address["name"].ToString() != "")
-                    {
-                        Carrot_Box_Item info_address = this.box_list.create_item("info_address");
-                        info_address.set_icon(this.carrot.icon_carrot_address);
-                        info_address.set_title(this.carrot.lang.Val("user_address", "Your address"));
-                        info_address.set_tip(us_address["name"].ToString());
-                    }
-                }
-            }
-
-            if (data_user["status_share"] != null)
-            {
-                Carrot_Box_Item info_status = this.box_list.create_item("info_status");
-                info_status.set_icon(this.icon_user_status);
-                info_status.set_title(this.carrot.lang.Val("user_info_status", "Information status"));
-                if (data_user["status_share"].ToString() == "0")
-                    info_status.set_tip(this.carrot.lang.Val("user_info_status_yes", "Share information"));
-                else
-                    info_status.set_tip(this.carrot.lang.Val("user_info_status_no", "Do not share information"));
-            }
-
-            if (data_user["user_id"] != null)
-            {
-                if (this.s_id_user_login == data_user["user_id"].ToString())
+                if (this.s_id_user_login == data_user["id"].ToString())
                 {
                     Carrot_Box_Btn_Panel panel_btn = this.box_list.create_panel_btn();
 
@@ -235,13 +195,19 @@ namespace Carrot
                     btn_edit.set_bk_color(this.carrot.color_highlight);
                     btn_edit.set_act_click(() => Act_show_edit_user(data_user));
 
+                    Carrot_Button_Item btn_change_password = panel_btn.create_btn("btn_change_password");
+                    btn_change_password.set_icon(icon_user_change_password);
+                    btn_change_password.set_label(this.carrot.lang.Val("change_password", "Change Password"));
+                    btn_change_password.set_label_color(Color.white);
+                    btn_change_password.set_bk_color(this.carrot.color_highlight);
+                    btn_change_password.set_act_click(actShowChangePassword);
+
                     Carrot_Button_Item btn_logout = panel_btn.create_btn("btn_logout");
                     btn_logout.set_icon(this.icon_user_logout);
                     btn_logout.set_label(this.carrot.lang.Val("logout", "Log out"));
                     btn_logout.set_label_color(Color.white);
                     btn_logout.set_bk_color(this.carrot.color_highlight);
                     btn_logout.set_act_click(() => this.Act_logout());
-
 
                     Carrot_Button_Item btn_canel = panel_btn.create_btn("btn_cancel");
                     btn_canel.set_icon(this.carrot.icon_carrot_cancel);
@@ -267,6 +233,31 @@ namespace Carrot
             this.Edit_or_add_by_data(data_user);
         }
 
+        private void actShowChangePassword()
+        {
+            Carrot_Box boxChangePassword = carrot.Create_Box();
+            boxChangePassword.set_title(carrot.L("change_password", "Change Password"));
+            boxChangePassword.set_icon(this.icon_user_change_password);
+
+            this.item_password = boxChangePassword.create_item("item_password");
+            this.item_password.set_type(Box_Item_Type.box_password_input);
+            this.item_password.check_type();
+            this.item_password.set_icon(this.carrot.user.icon_user_change_password);
+            this.item_password.set_title("Password");
+            this.item_password.set_tip("Enter your password");
+            this.item_password.set_lang_data("user_password", "user_password_tip");
+            this.item_password.load_lang_data();
+
+            this.item_rep_password = boxChangePassword.create_item("item_rep_password");
+            this.item_rep_password.set_type(Box_Item_Type.box_password_input);
+            this.item_rep_password.check_type();
+            this.item_rep_password.set_icon(this.carrot.user.icon_user_change_password);
+            this.item_rep_password.set_title("Re-enter password");
+            this.item_rep_password.set_tip("Confirm your password again");
+            this.item_rep_password.set_lang_data("user_rep_password", "user_rep_password_tip");
+            this.item_rep_password.load_lang_data();
+        }
+
         private void Act_logout()
         {
             this.delete_data_user_login();
@@ -280,7 +271,7 @@ namespace Carrot
             this.cur_window_user_login = window_login.GetComponent<Carrot_Window_User_Login>();
             this.cur_window_user_login.On_load(this.carrot);
             this.cur_window_user_login.act_after_login_success = act_login_success;
-            window_login.GetComponent<Carrot_lang_show>().load_lang_emp(this.carrot.lang.Get_sp_lang_cur(),carrot.lang);
+            window_login.GetComponent<Carrot_lang_show>().load_lang_emp(this.carrot.lang.Get_sp_lang_cur(), carrot.lang);
             this.cur_window_user_login.Check_mode_login();
             if (this.carrot.type_control != TypeControl.None) this.carrot.game.set_list_button_gamepad_console(this.cur_window_user_login.UI.get_list_btn());
         }
@@ -292,9 +283,9 @@ namespace Carrot
 
         public void show_window_lost_password()
         {
-            this.box_list = this.carrot.Create_Box(this.carrot.lang.Val("forgot_password", "Forgot password"),this.icon_user_change_password);
+            this.box_list = this.carrot.Create_Box(this.carrot.lang.Val("forgot_password", "Forgot password"), this.icon_user_change_password);
 
-            Carrot_Box_Item item_tip=this.box_list.create_item("item_username");
+            Carrot_Box_Item item_tip = this.box_list.create_item("item_username");
             item_tip.set_icon(this.icon_user_info);
             item_tip.set_title(this.carrot.lang.Val("forgot_password", "Forgot password"));
             item_tip.set_tip(this.carrot.lang.Val("forgot_password_tip", "Enter your phone number or email to retrieve the password"));
@@ -317,12 +308,12 @@ namespace Carrot
             this.item_phone.set_type(Box_Item_Type.box_number_input);
             this.item_phone.check_type();
 
-            Carrot_Box_Btn_Panel panel_btn=this.box_list.create_panel_btn();
-            Carrot_Button_Item btn_done=panel_btn.create_btn("item_done");
+            Carrot_Box_Btn_Panel panel_btn = this.box_list.create_panel_btn();
+            Carrot_Button_Item btn_done = panel_btn.create_btn("item_done");
             btn_done.set_icon(this.carrot.icon_carrot_done);
             btn_done.set_label_color(Color.white);
             btn_done.set_bk_color(this.carrot.color_highlight);
-            btn_done.set_label(this.carrot.lang.Val("done","Done"));
+            btn_done.set_label(this.carrot.lang.Val("done", "Done"));
             btn_done.set_act_click(Act_done_lost_password);
 
             Carrot_Button_Item btn_cancel = panel_btn.create_btn("item_cancel");
@@ -338,8 +329,8 @@ namespace Carrot
         {
             this.carrot.show_loading();
             StructuredQuery q = new("user-" + this.carrot.lang.Get_key_lang());
-            if(this.item_email.get_val()!="")q.Add_where("email",Query_OP.EQUAL,this.item_email.get_val());
-            if(this.item_phone.get_val()!="") q.Add_where("phone",Query_OP.EQUAL,this.item_phone.get_val());
+            if (this.item_email.get_val() != "") q.Add_where("email", Query_OP.EQUAL, this.item_email.get_val());
+            if (this.item_phone.get_val() != "") q.Add_where("phone", Query_OP.EQUAL, this.item_phone.get_val());
             q.Set_limit(1);
             this.carrot.server.Get_doc(q.ToJson(), Act_done_lost_password_done, Act_done_lost_password_fail);
         }
@@ -350,8 +341,8 @@ namespace Carrot
             Fire_Collection fc = new(s_data);
             if (!fc.is_null)
             {
-                string password =fc.fire_document[0].Get_val("password").ToString();
-                if (password!=null) this.carrot.Show_msg(this.carrot.lang.Val("pass_acc_msg", "The password for the account is:")+password);
+                string password = fc.fire_document[0].Get_val("password").ToString();
+                if (password != null) this.carrot.Show_msg(this.carrot.lang.Val("pass_acc_msg", "The password for the account is:") + password);
                 return;
             }
             else
@@ -369,15 +360,17 @@ namespace Carrot
         public void set_data_user_login(IDictionary data_user)
         {
             this.s_data_user_login = Json.Serialize(data_user);
-            this.s_id_user_login = data_user["user_id"].ToString();
-            this.s_password_user_login = data_user["password"].ToString();
-            Debug.Log("Save data user:"+this.s_data_user_login);
+            this.s_id_user_login = data_user["id"].ToString();
+            Debug.Log("Save data user:" + this.s_data_user_login);
             PlayerPrefs.SetString("data_user_login", this.s_data_user_login);
             PlayerPrefs.SetString("id_user_login", this.s_id_user_login);
             PlayerPrefs.SetString("password_user_login", this.s_password_user_login);
             if (this.carrot.img_btn_login != null)
             {
-                if(data_user["avatar"].ToString()!="") this.carrot.get_img_and_save_playerPrefs(data_user["avatar"].ToString(), this.carrot.img_btn_login, "carrot_user_avatar");
+                if (data_user["avatar"] != null)
+                {
+                    if (data_user["avatar"].ToString() != "") this.carrot.get_img_and_save_playerPrefs(data_user["avatar"].ToString(), this.carrot.img_btn_login, "carrot_user_avatar");
+                }
             }
             if (this.event_after_login_user != null) this.event_after_login_user.Invoke();
         }
@@ -465,7 +458,7 @@ namespace Carrot
             if (this.box_list != null) this.box_list.close();
             this.box_list = this.carrot.Create_Box();
             this.box_list.set_icon(this.icon_user_register);
-            if(data==null)
+            if (data == null)
                 this.box_list.set_title(this.carrot.lang.Val("register", "Register Account"));
             else
                 this.box_list.set_title(this.carrot.lang.Val("acc_edit", "Update account information"));
@@ -486,7 +479,8 @@ namespace Carrot
             this.item_avatar.set_tip("Choose your profile picture");
             this.item_avatar.set_lang_data("user_avatar", "user_avatar_tip");
             this.item_avatar.load_lang_data();
-            this.item_avatar.set_act(()=>this.Act_show_list_avatar());
+            this.item_avatar.set_act(() => this.Act_show_list_avatar());
+
             if (data != null)
             {
                 if (data["avatar"] != null)
@@ -498,9 +492,9 @@ namespace Carrot
                 }
             }
 
-            Carrot_Box_Btn_Item btn_list_avatar=this.item_avatar.create_item();
+            Carrot_Box_Btn_Item btn_list_avatar = this.item_avatar.create_item();
             btn_list_avatar.set_icon(this.carrot.icon_carrot_all_category);
-            btn_list_avatar.set_act(()=>this.Act_show_list_avatar());
+            btn_list_avatar.set_act(() => this.Act_show_list_avatar());
             btn_list_avatar.set_color(this.carrot.color_highlight);
 
             this.item_name = this.box_list.create_item("item_name");
@@ -535,10 +529,8 @@ namespace Carrot
             this.item_sex.dropdown_val.options.Add(new Dropdown.OptionData { text = this.carrot.lang.Val("user_sex_girl", "girl") });
             if (data != null)
             {
-                if (data["sex"] != null)
-                    this.item_sex.dropdown_val.value = int.Parse(data["sex"].ToString());
-                else
-                    this.item_sex.dropdown_val.value = 0;
+                if (data["sex"] != null) item_sex.set_val(data["sex"].ToString());
+                else item_sex.set_val("0");
             }
             this.item_sex.dropdown_val.RefreshShownValue();
             this.item_sex.load_lang_data();
@@ -563,11 +555,7 @@ namespace Carrot
             this.item_address.load_lang_data();
             if (data != null)
             {
-                if (data["address"] != null)
-                {
-                    IDictionary u_address = (IDictionary)data["address"];
-                    this.item_address.set_val(u_address["name"].ToString());
-                }
+                if (data["address"] != null) if (data["address"].ToString() != "") this.item_address.set_val(data["address"].ToString());
             }
             Carrot_Box_Btn_Item btn_get_location=this.item_address.create_item();
             btn_get_location.set_color(this.carrot.color_highlight);
@@ -595,29 +583,30 @@ namespace Carrot
                     this.item_status_share.dropdown_val.value = int.Parse(data["status_share"].ToString());
                 else
                     this.item_status_share.dropdown_val.value = 0;
+
+                if (this.is_model_nomal) this.item_status_share.gameObject.SetActive(false);
             }
-            if (this.is_model_nomal) this.item_status_share.gameObject.SetActive(false);
 
-            this.item_password = this.box_list.create_item("item_password");
-            this.item_password.set_type(Box_Item_Type.box_password_input);
-            this.item_password.check_type();
-            this.item_password.set_icon(this.carrot.user.icon_user_change_password);
-            this.item_password.set_title("Password");
-            this.item_password.set_tip("Enter your password");
-            this.item_password.set_lang_data("user_password", "user_password_tip");
-            this.item_password.load_lang_data();
-            if (data != null) if (data["password"] != null) this.item_password.set_val(data["password"].ToString());
+            if (data == null)
+            {
+                this.item_password = this.box_list.create_item("item_password");
+                this.item_password.set_type(Box_Item_Type.box_password_input);
+                this.item_password.check_type();
+                this.item_password.set_icon(this.carrot.user.icon_user_change_password);
+                this.item_password.set_title("Password");
+                this.item_password.set_tip("Enter your password");
+                this.item_password.set_lang_data("user_password", "user_password_tip");
+                this.item_password.load_lang_data();
 
-            this.item_rep_password = this.box_list.create_item("item_rep_password");
-            this.item_rep_password.set_type(Box_Item_Type.box_password_input);
-            this.item_rep_password.check_type();
-            this.item_rep_password.set_icon(this.carrot.user.icon_user_change_password);
-            this.item_rep_password.set_title("Re-enter password");
-            this.item_rep_password.set_tip("Confirm your password again");
-            this.item_rep_password.set_lang_data("user_rep_password", "user_rep_password_tip");
-            this.item_rep_password.load_lang_data();
-            if (data != null) if (data["password"] != null) this.item_rep_password.set_val(data["password"].ToString());
-
+                this.item_rep_password = this.box_list.create_item("item_rep_password");
+                this.item_rep_password.set_type(Box_Item_Type.box_password_input);
+                this.item_rep_password.check_type();
+                this.item_rep_password.set_icon(this.carrot.user.icon_user_change_password);
+                this.item_rep_password.set_title("Re-enter password");
+                this.item_rep_password.set_tip("Confirm your password again");
+                this.item_rep_password.set_lang_data("user_rep_password", "user_rep_password_tip");
+                this.item_rep_password.load_lang_data();
+            }
 
             Carrot_Box_Btn_Panel panel_btn = this.box_list.create_panel_btn();
             Carrot_Button_Item btn_done = panel_btn.create_btn("btn_done");
@@ -651,60 +640,65 @@ namespace Carrot
             else
                 s_title = this.carrot.lang.Val("acc_edit", "Update account information");
 
-            if (this.item_name.get_val().Trim().Length<3)
+            if (this.item_name.get_val().Trim().Length < 3)
             {
                 this.carrot.Show_msg(s_title, this.carrot.lang.Val("error_name", "The account name cannot be empty and be greater than 5 characters"));
                 return;
             }
-
-            if (this.item_password.get_val().Trim().Length < 3)
+            
+            if (!Regex.IsMatch(item_email.get_val(), @"^[^@\s]+@[^@\s]+\.[^@\s]+$"))
             {
-                this.carrot.Show_msg(s_title, this.carrot.lang.Val("error_password", "Password cannot be blank and be greater than 6 characters"));
-                return;
-            }
-
-            if (this.item_password.get_val().Trim()!=this.item_rep_password.get_val().Trim())
-            {
-                this.carrot.Show_msg(s_title, this.carrot.lang.Val("error_rep_password", "Re-enter the password does not match."));
+                this.carrot.Show_msg(s_title, this.carrot.lang.Val("error_email", "Invalid email format!"));
                 return;
             }
 
             this.user_address.name = this.item_address.get_val();
-            user_carrot_data u = new user_carrot_data()
+
+            WWWForm frmUserEdit = new();
+            frmUserEdit.AddField("name", item_name.get_val());
+            frmUserEdit.AddField("sex", item_sex.get_val());
+            frmUserEdit.AddField("email", item_email.get_val());
+            frmUserEdit.AddField("phone", item_phone.get_val());
+            frmUserEdit.AddField("address", item_address.get_val());
+            frmUserEdit.AddField("lang", carrot.lang.Get_key_lang());
+            frmUserEdit.AddField("status_share", item_status_share.get_val());
+
+            if (this.s_id_user_login != "")
             {
-                name = this.item_name.get_val(),
-                sex=this.item_sex.get_val(),
-                email = this.item_email.get_val(),
-                phone = this.item_phone.get_val(),
-                address = this.user_address,
-                password = this.item_password.get_val(),
-                lang = this.carrot.lang.Get_key_lang(),
-                status_share = this.item_status_share.get_val(),
-                avatar = this.item_avatar.get_val(),
-                date_create = DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ssZ")
-            };
-
-            this.carrot.show_loading();
-            string user_id_new = "";
-            if(this.s_id_user_login=="")
-                user_id_new="user" +this.carrot.generateID();
+                frmUserEdit.AddField("id", this.s_id_user_login);
+                this.carrot.send(carrot.url_worker + "/update_user", frmUserEdit, Act_done_register_done, Act_done_register_fail);
+            }
             else
-                user_id_new = this.s_id_user_login;
+            {
 
-            this.data_user_temp= (IDictionary)Json.Deserialize(JsonConvert.SerializeObject(u));
-            this.carrot.server.Add_Document_To_Collection("user-" + this.carrot.lang.Get_key_lang(), user_id_new, this.carrot.server.Convert_IDictionary_to_json(this.data_user_temp), Act_done_register_done, Act_done_register_fail);
+                if (item_password.get_val().Trim().Length < 5)
+                {
+                    this.carrot.Show_msg(this.carrot.lang.Val("register", "Register Account"), this.carrot.lang.Val("error_passowrd_re", "Password must be greater than 6 characters!"));
+                    return;
+                }
+                
+                if (item_password.get_val().Trim()!=item_rep_password.get_val().Trim())
+                {
+                    this.carrot.Show_msg(this.carrot.lang.Val("register", "Register Account"), this.carrot.lang.Val("error_passowrd_re_rep", "Password does not match the password confirmation field"));
+                    return;
+                }
+
+                frmUserEdit.AddField("password", item_password.get_val());
+                this.carrot.send(carrot.url_worker + "/register", frmUserEdit, Act_done_register_done, Act_done_register_fail);
+            }
         }
 
         private void Act_done_register_done(string s_data)
         {
             this.carrot.hide_loading();
+            IDictionary reData = (IDictionary)Json.Deserialize(s_data);
+            IDictionary userData = (IDictionary) reData["user"];
             if (this.s_id_user_login == "")
                 this.carrot.Show_msg(this.carrot.lang.Val("register", "Register Account"), this.carrot.lang.Val("register_success", "Account registration is successful!"), Msg_Icon.Success);
             else
             {
                 this.carrot.Show_msg(this.carrot.lang.Val("register", "Register Account"), this.carrot.lang.Val("acc_edit_success", "Successful account information update!"), Msg_Icon.Success);
-                this.data_user_temp["user_id"] = this.s_id_user_login;
-                this.set_data_user_login(this.data_user_temp);
+                this.set_data_user_login(userData);
             }
             if (this.box_list != null) this.box_list.close();
         }
@@ -783,8 +777,8 @@ namespace Carrot
             this.item_phone.gameObject.SetActive(true);
             this.item_address.gameObject.SetActive(false);
             this.item_status_share.gameObject.SetActive(false);
-            this.item_password.gameObject.SetActive(true);
-            this.item_rep_password.gameObject.SetActive(true);
+            if(this.item_password!=null)  this.item_password.gameObject.SetActive(true);
+            if(this.item_rep_password!=null) this.item_rep_password.gameObject.SetActive(true);
         }
 
         private void act_model_advanced_register()
@@ -800,8 +794,8 @@ namespace Carrot
             this.item_phone.gameObject.SetActive(true);
             this.item_address.gameObject.SetActive(true);
             this.item_status_share.gameObject.SetActive(true);
-            this.item_password.gameObject.SetActive(true);
-            this.item_rep_password.gameObject.SetActive(true);
+            if(this.item_password!=null) this.item_password.gameObject.SetActive(true);
+            if(this.item_rep_password!=null) this.item_rep_password.gameObject.SetActive(true);
         }
 
         #region List Avatar
