@@ -529,6 +529,12 @@ namespace Carrot
             return this.show_loading(act_send(url, frm, done_func, fail_func));
         }
 
+        public Carrot_Window_Loading Get(string url, UnityAction<string> done_func = null, UnityAction<string> fail_func = null)
+        {
+            if (model_app == ModelApp.Develope) this.log("Get Request url:" + url);
+            return this.show_loading(act_get(url, done_func, fail_func));
+        }
+
         IEnumerator act_send(string url, WWWForm frm_send, UnityAction<string> done_func, UnityAction<string> fail_func)
         {
             using (UnityWebRequest www = UnityWebRequest.Post(url, frm_send))
@@ -549,6 +555,26 @@ namespace Carrot
             }
         }
 
+        IEnumerator act_get(string url, UnityAction<string> done_func, UnityAction<string> fail_func)
+        {
+            using (UnityWebRequest www = UnityWebRequest.Get(url))
+            {
+                yield return www.SendWebRequest();
+                this.hide_loading();
+
+                if (www.result != UnityWebRequest.Result.Success)
+                {
+                    if (model_app == ModelApp.Develope) this.Show_msg("Error", www.error, Msg_Icon.Error);
+                    fail_func?.Invoke(www.error);
+                }
+                else
+                {
+                    if (model_app == ModelApp.Develope) Debug.Log("Response: " + www.downloadHandler.text);
+                    done_func?.Invoke(www.downloadHandler.text);
+                }
+            }
+        }
+    
         public void send_hide(string url, WWWForm frm, UnityAction<string> done_func = null, UnityAction<string> error_func = null)
         {
             StartCoroutine(act_send_hide(url, frm, done_func, error_func));
