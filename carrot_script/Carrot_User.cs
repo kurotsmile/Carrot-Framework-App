@@ -114,7 +114,6 @@ namespace Carrot
 
         private void Show_user_cur_info()
         {
-            Debug.Log("Show_user_cur_info:" + this.s_data_user_login);
             IDictionary data_user = (IDictionary)Json.Deserialize(this.s_data_user_login);
             Show_info_user_by_data(data_user);
         }
@@ -152,6 +151,19 @@ namespace Carrot
                 infoItemUeser.set_tip(s_val);
                 infoItemUeser.set_val(s_val);
                 infoItemUeser.set_title(key);
+
+                if (key == "id")
+                {
+                    Carrot_Box_Btn_Item btnInfo = infoItemUeser.create_item();
+                    btnInfo.set_icon(carrot.user.icon_user_info);
+                    btnInfo.set_icon_color(Color.white);
+                    btnInfo.set_color(carrot.color_highlight);
+                    Destroy(btnInfo.GetComponent<Button>());
+                    infoItemUeser.set_act(() =>
+                    {
+                        Application.OpenURL(carrot.mainhost + "/?page=user&id=" + user_id);
+                    });
+                }
 
                 if (key == "avatar")
                 {
@@ -193,7 +205,7 @@ namespace Carrot
                     Carrot_Box_Btn_Panel panel_btn = this.box_list.create_panel_btn();
 
                     Carrot_Button_Item btn_edit = panel_btn.create_btn("btn_edit");
-                    btn_edit.set_icon(this.carrot.icon_carrot_done);
+                    btn_edit.set_icon(this.icon_user_edit);
                     btn_edit.set_label(this.carrot.lang.Val("edit", "Edit"));
                     btn_edit.set_label_color(Color.white);
                     btn_edit.set_bk_color(this.carrot.color_highlight);

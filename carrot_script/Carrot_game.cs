@@ -588,12 +588,10 @@ namespace Carrot
 
         public void Show_List_Top_player()
         {
-            this.carrot.show_loading();
-            StructuredQuery q = new StructuredQuery("app");
-            q.Add_where("name_en",Query_OP.EQUAL,this.carrot.Carrotstore_AppId);
-            q.Add_select("rank");
-            q.Set_limit(1);
-            this.carrot.server.Get_doc(q.ToJson(), Act_get_data_Top_player, Act_get_List_Top_player_fail);
+            WWWForm frmListTop = new();
+            frmListTop.AddField("appId", carrot.Carrotstore_AppId);
+            frmListTop.AddField("appId", carrot.Carrotstore_AppId);
+            //this.carrot.server.Get_doc(q.ToJson(), Act_get_data_Top_player, Act_get_List_Top_player_fail);
         }
 
         private void Act_get_data_Top_player(string s_data)
@@ -746,11 +744,12 @@ namespace Carrot
             string user_id_login = this.carrot.user.get_id_user_login();
             if (user_id_login != "")
             {
-                StructuredQuery q = new("app");
-                q.Add_where("name_en",Query_OP.EQUAL,this.carrot.Carrotstore_AppId);
-                q.Set_limit(1);
-                q.Add_select("rank");
-                this.carrot.server.Get_doc(q.ToJson(), Act_get_data_app_done, Act_update_scores_fail);
+                WWWForm frmTopPlayer = new();
+                frmTopPlayer.AddField("userId", user_id_login);
+                frmTopPlayer.AddField("appId", carrot.Carrotstore_AppId);
+                frmTopPlayer.AddField("score", scores);
+                frmTopPlayer.AddField("mode", type);
+                carrot.send_hide(carrot.url_worker + "/update_top_player",frmTopPlayer);
             }
         }
 
