@@ -3,6 +3,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
+using UnityEditor.PackageManager;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UI;
@@ -128,6 +129,9 @@ namespace Carrot
             if (s_key == "address") return carrot.icon_carrot_address;
             if (s_key == "birthday") return carrot.sp_icon_table_color;
             if (s_key == "status_share") return icon_user_status;
+            if (s_key == "lang") return carrot.lang.icon;
+            if (s_key == "role") return carrot.icon_carrot_support;
+            if (s_key == "type") return carrot.icon_carrot_all_category;
             return carrot.icon_carrot_database;
         }
 
@@ -239,23 +243,67 @@ namespace Carrot
             boxChangePassword.set_title(carrot.L("change_password", "Change Password"));
             boxChangePassword.set_icon(this.icon_user_change_password);
 
-            this.item_password = boxChangePassword.create_item("item_password");
-            this.item_password.set_type(Box_Item_Type.box_password_input);
-            this.item_password.check_type();
-            this.item_password.set_icon(this.carrot.user.icon_user_change_password);
-            this.item_password.set_title("Password");
-            this.item_password.set_tip("Enter your password");
-            this.item_password.set_lang_data("user_password", "user_password_tip");
-            this.item_password.load_lang_data();
+            Carrot_Box_Item password_cur = boxChangePassword.create_item("item_password");
+            password_cur.set_type(Box_Item_Type.box_password_input);
+            password_cur.check_type();
+            password_cur.set_icon(this.carrot.user.icon_user_change_password);
+            password_cur.set_title("Password Curent");
+            password_cur.set_tip("Enter your password");
+            password_cur.set_lang_data("user_password", "user_password_tip");
+            password_cur.load_lang_data();
 
-            this.item_rep_password = boxChangePassword.create_item("item_rep_password");
-            this.item_rep_password.set_type(Box_Item_Type.box_password_input);
-            this.item_rep_password.check_type();
-            this.item_rep_password.set_icon(this.carrot.user.icon_user_change_password);
-            this.item_rep_password.set_title("Re-enter password");
-            this.item_rep_password.set_tip("Confirm your password again");
-            this.item_rep_password.set_lang_data("user_rep_password", "user_rep_password_tip");
-            this.item_rep_password.load_lang_data();
+            Carrot_Box_Item password_new = boxChangePassword.create_item("item_password");
+            password_new.set_type(Box_Item_Type.box_password_input);
+            password_new.check_type();
+            password_new.set_icon(this.carrot.user.icon_user_change_password);
+            password_new.set_title("New Password");
+            password_new.set_tip("Enter new password");
+            password_new.set_lang_data("user_password", "user_password_tip");
+            password_new.load_lang_data();
+
+            Carrot_Box_Item item_rep_password = boxChangePassword.create_item("item_rep_password");
+            item_rep_password.set_type(Box_Item_Type.box_password_input);
+            item_rep_password.check_type();
+            item_rep_password.set_icon(this.carrot.user.icon_user_change_password);
+            item_rep_password.set_title("Re-enter password");
+            item_rep_password.set_tip("Confirm your password again");
+            item_rep_password.set_lang_data("user_rep_password", "user_rep_password_tip");
+            item_rep_password.load_lang_data();
+
+            boxChangePassword.CreatePanelCancelDone(() =>{
+
+                if (password_cur.get_val().Trim().Length < 5)
+                {
+                    this.carrot.Show_msg(carrot.L("change_password", "Change Password"), this.carrot.lang.Val("error_passowrd_old", "Password must be greater than 6 characters!"));
+                    return false;
+                }
+
+                if (password_new.get_val().Trim().Length < 5)
+                {
+                    this.carrot.Show_msg(carrot.L("change_password", "Change Password"), this.carrot.lang.Val("error_passowrd_new", "New Password must be greater than 6 characters!"));
+                    return false;
+                }
+
+                if (password_new.get_val().Trim() != item_rep_password.get_val().Trim())
+                {
+                    this.carrot.Show_msg(carrot.L("change_password", "Change Password"), this.carrot.lang.Val("error_passowrd_re_rep", "Password does not match the password confirmation field"));
+                    return false;
+                }
+
+                WWWForm frmChangePass = new();
+                frmChangePass.AddField("old_password", password_cur.get_val());
+                frmChangePass.AddField("new_password", item_rep_password.get_val());
+                frmChangePass.AddField("id",this.s_id_user_login);
+                carrot.send(carrot.url_worker + "/update_password", frmChangePass, (data) =>
+                {
+                    this.carrot.Show_msg(carrot.L("change_password", "Change Password"), this.carrot.lang.Val("change_password_success", "Password changed successfully!"));
+                    boxChangePassword.close();
+                }, (err) =>
+                {
+                    this.carrot.Show_msg(carrot.L("change_password", "Change Password"), this.carrot.lang.Val("change_password_fail", "Password change failed!")+"\n"+err);
+                });
+                return false;
+            });
         }
 
         private void Act_logout()

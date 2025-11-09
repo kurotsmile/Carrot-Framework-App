@@ -191,7 +191,7 @@ namespace Carrot
             return panel_btn;
         }
         
-        public Carrot_Box_Btn_Panel CreatePanelCancelDone(UnityAction actDone,UnityAction actCancel=null)
+        public Carrot_Box_Btn_Panel CreatePanelCancelDone(Func<bool> actDone,UnityAction actCancel=null)
         {
             GameObject obj_panel_btn = this.add_item(this.box_item_panel_btn_prefab);
             Carrot_Box_Btn_Panel panel_btn = obj_panel_btn.GetComponent<Carrot_Box_Btn_Panel>();
@@ -202,8 +202,8 @@ namespace Carrot
             btn_done.set_label(this.carrot.L("done","Done"));
             btn_done.set_act_click(()=>
             {
-                this.close();
-                actDone?.Invoke();
+                bool result = actDone?.Invoke() ?? true; // Nếu null thì coi như true
+                if (result) this.close();
             });
 
             Carrot_Button_Item btn_cancel=panel_btn.create_btn();
@@ -213,8 +213,8 @@ namespace Carrot
             btn_cancel.set_label(this.carrot.L("cancel","Cancel"));
             btn_cancel.set_act_click(()=>
             {
-                this.close();
                 actCancel?.Invoke();
+                this.close();
             });
             return panel_btn;
         }
