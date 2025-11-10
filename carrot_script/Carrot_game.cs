@@ -687,7 +687,7 @@ namespace Carrot
                        if(data_rank["user_avatar"]!=null&&data_rank["user_avatar"].ToString()!="") this.carrot.get_img_and_save_playerPrefs(data_rank["user_avatar"].ToString(), top_player.img_user, "avatar_user_" + user_id);
                     }
 
-                    //top_player.set_act_click(() => this.carrot.user.show_user_by_id(user_id, user_lang));
+                    top_player.set_act_click(() => this.carrot.user.show_user_by_id(user_id));
                 }
 
                 if (this.carrot.type_app == TypeApp.Game)

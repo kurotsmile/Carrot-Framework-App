@@ -773,23 +773,25 @@ namespace Carrot
             return this.s_id_user_login;
         }
 
-        public void show_user_by_id(string s_id_user, string s_lang_user)
+        public void show_user_by_id(string s_id_user)
         {
             this.carrot.play_sound_click();
-            this.carrot.show_loading();
-            this.carrot.server.Get_doc_by_path("user-" + s_lang_user, s_id_user, Act_show_user_by_id_done, Act_show_user_by_id_fail);
+            this.carrot.Get(carrot.url_worker + "/get_user?id="+s_id_user, Act_show_user_by_id_done, Act_show_user_by_id_fail);
         }
 
         private void Act_show_user_by_id_done(string s_data)
         {
             Debug.Log("user:" + s_data);
-            this.carrot.hide_loading();
-            Fire_Document fd = new(s_data);
-            IDictionary data_user = fd.Get_IDictionary();
-            if (data_user!=null)
-                this.Show_info_user_by_data(data_user);
+            IList listUser = Json.Deserialize(s_data) as IList;
+            if (listUser.Count > 0)
+            {
+                IDictionary data_user = listUser[0] as IDictionary;
+                if (data_user["id"]!=null) this.Show_info_user_by_data(data_user);
+            }
             else
+            {
                 this.carrot.Show_msg(this.carrot.lang.Val("acc_info", "Account Information"), "Account not found", Msg_Icon.Alert);
+            }
         }
 
         private void Act_show_user_by_id_fail(string s_error)
@@ -798,10 +800,10 @@ namespace Carrot
             this.carrot.Show_msg(this.carrot.lang.Val("acc_info", "Account Information"), "The operation failed, please try again next time!", Msg_Icon.Error);
         }
 
-        public void show_user_by_id(string s_id_user, string s_lang_user, UnityAction<IDictionary> act_after)
+        public void show_user_by_id(string s_id_user, UnityAction<IDictionary> act_after)
         {
             this.act_after_show_view_by_id = act_after;
-            this.show_user_by_id(s_id_user, s_lang_user);
+            this.show_user_by_id(s_id_user);
         }
 
         public string get_data_user_login(string key_data)
