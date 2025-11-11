@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.Purchasing;
-using UnityEngine.Purchasing.Extension;
 
 namespace Carrot
 {
@@ -372,30 +371,20 @@ namespace Carrot
 
         private void Check_pay()
         {
-            this.carrot.show_loading();
-            Debug.Log("Check pay (" + this.product_id_pay + " - " + this.user_id_pay + ") from server...");
-            StructuredQuery q = new("order");
-            if (this.order_type_pay == "1")
-            {
-                q.Add_where("user_id", Query_OP.EQUAL, user_id_pay);
-                q.Add_where("id_product", Query_OP.EQUAL, this.product_id_pay);
-            }
-            else
-            {
-                q.Add_where("id_order", Query_OP.EQUAL, this.order_id_pay);
-            }
-            carrot.server.Get_doc(q.ToJson(), Check_pay_done, Act_server_fail);
+            WWWForm frmCheckPay = new();
+            frmCheckPay.AddField("user_id",user_id_pay);
+            frmCheckPay.AddField("product_id", product_id_pay);
+            carrot.send(carrot.url_worker + "/check_pay", frmCheckPay, Check_pay_done, Act_server_fail);
         }
 
         private void Check_pay_done(string s_data)
         {
-            this.carrot.hide_loading();
-            Fire_Collection fc = new(s_data);
-            if (!fc.is_null)
+            IDictionary dataItem = (IDictionary) Json.Deserialize(s_data);
+            if (dataItem["order"] != null)
             {
+                IDictionary orderData = dataItem["order"] as IDictionary;
                 this.Reset_session_carrot_pay();
-                IDictionary data_pay = fc.fire_document[0].Get_IDictionary();
-                onCarrotPaySuccess?.Invoke(data_pay["id_product"].ToString());
+                onCarrotPaySuccess?.Invoke(orderData["product_id"].ToString());
                 if (box_shop != null) box_shop.close();
             }
             else
