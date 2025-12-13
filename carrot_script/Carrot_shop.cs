@@ -372,14 +372,14 @@ namespace Carrot
         private void Check_pay()
         {
             WWWForm frmCheckPay = new();
-            frmCheckPay.AddField("user_id",user_id_pay);
+            frmCheckPay.AddField("user_id", user_id_pay);
             frmCheckPay.AddField("product_id", product_id_pay);
             carrot.send(carrot.url_worker + "/check_pay", frmCheckPay, Check_pay_done, Act_server_fail);
         }
 
         private void Check_pay_done(string s_data)
         {
-            IDictionary dataItem = (IDictionary) Json.Deserialize(s_data);
+            IDictionary dataItem = (IDictionary)Json.Deserialize(s_data);
             if (dataItem["order"] != null)
             {
                 IDictionary orderData = dataItem["order"] as IDictionary;
@@ -451,7 +451,7 @@ namespace Carrot
             carrot.log("Purchase failed: " + product.definition.id + " | Reason: " + failureReason);
             carrot.hide_loading();
             carrot.Show_msg(this.carrot.lang.Val("shop", "Shop"),
-            carrot.lang.Val("shop_buy_fail", "Purchase failed, Please check your account balance, or try again later\n"+failureReason),
+            carrot.lang.Val("shop_buy_fail", "Purchase failed, Please check your account balance, or try again later\n" + failureReason),
             Msg_Icon.Error);
         }
     }
