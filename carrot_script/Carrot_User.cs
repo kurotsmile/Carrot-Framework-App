@@ -391,7 +391,7 @@ namespace Carrot
             if (this.item_email.get_val() != "") q.Add_where("email", Query_OP.EQUAL, this.item_email.get_val());
             if (this.item_phone.get_val() != "") q.Add_where("phone", Query_OP.EQUAL, this.item_phone.get_val());
             q.Set_limit(1);
-            this.carrot.server.Get_doc(q.ToJson(), Act_done_lost_password_done, Act_done_lost_password_fail);
+            this.carrot.hub.Get_doc(q.ToJson(), Act_done_lost_password_done, Act_done_lost_password_fail);
         }
 
         private void Act_done_lost_password_done(string s_data)
@@ -868,7 +868,7 @@ namespace Carrot
             {
                 this.carrot.show_loading();
                 StructuredQuery q = new("user-avatar");
-                this.carrot.server.Get_doc(q.ToJson(), Act_show_list_avatar_done, Act_show_list_avatar_fail);
+                this.carrot.hub.Get_doc(q.ToJson(), Act_show_list_avatar_done, Act_show_list_avatar_fail);
             }
             else
             {

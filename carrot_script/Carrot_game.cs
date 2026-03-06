@@ -589,7 +589,7 @@ namespace Carrot
         public void Show_List_Top_player()
         {
             carrot.Get(carrot.url_worker+"/list_top_player?appId="+carrot.Carrotstore_AppId,Act_get_data_Top_player, Act_get_List_Top_player_fail);
-            //this.carrot.server.Get_doc(q.ToJson(), Act_get_data_Top_player, Act_get_List_Top_player_fail);
+            //this.carrot.hub.Get_doc(q.ToJson(), Act_get_data_Top_player, Act_get_List_Top_player_fail);
         }
 
         private void Act_get_data_Top_player(string s_data)
@@ -792,8 +792,8 @@ namespace Carrot
 
             app["rank"] = rank;
             IDictionary app_data = (IDictionary)Json.Deserialize(JsonConvert.SerializeObject(app));
-            string s_json = this.carrot.server.Convert_IDictionary_to_json(app_data);
-            this.carrot.server.Update_Field_Document("app", this.carrot.Carrotstore_AppId,"rank", s_json);
+            string s_json = this.carrot.hub.Convert_IDictionary_to_json(app_data);
+            this.carrot.hub.Update_Field_Document("app", this.carrot.Carrotstore_AppId,"rank", s_json);
         }
 
         private void Act_update_scores_fail(string s_error)

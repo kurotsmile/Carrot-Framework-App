@@ -171,7 +171,7 @@ AudioSource:
   m_Enabled: 1
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 0}
-  m_audioClip: {fileID: 8300000, guid: b946c0e1344876d4d83aace333c03774, type: 3}
+  m_audioClip: {fileID: 0}
   m_Resource: {fileID: 8300000, guid: b946c0e1344876d4d83aace333c03774, type: 3}
   m_PlayOnAwake: 0
   m_Volume: 1
@@ -275,7 +275,7 @@ GameObject:
   - component: {fileID: 1244711569507986795}
   - component: {fileID: 3353702974751351471}
   - component: {fileID: 6474188085226842489}
-  - component: {fileID: 6567307194208892893}
+  - component: {fileID: 6901891455294966957}
   m_Layer: 0
   m_Name: Carrot
   m_TagString: Untagged
@@ -313,12 +313,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   mainhost: https://carrotstore.web.app
+  url_worker: https://json-worker.tranthienthanh93.workers.dev
   key_api_rest_firestore: 
   key_api_google_location_map: 
   list_url_config:
   - https://raw.githubusercontent.com/kurotsmile/Database-Store-Json/main/config/carrot_framework_config.json
   - https://www.googleapis.com/drive/v3/files/164HKCBnFqiHlvQyTdn5bVN1xbKVrjUXB?alt=media&key=AIzaSyDKcjH_bDJz3EcqPdV5i62IZNVQ6EkyOFg
-  FileNameLangApp: 
+  FileNameLangApp: MusicAppLangCustomer
   model_app: 1
   os_app: 0
   store_public: 0
@@ -351,7 +352,7 @@ MonoBehaviour:
   camera_pro: {fileID: 1244711569507986795}
   location: {fileID: 3353702974751351471}
   theme: {fileID: 6474188085226842489}
-  server: {fileID: 6567307194208892893}
+  hub: {fileID: 6901891455294966957}
   window_msg_prefab: {fileID: 1750426150788012, guid: 064e59bc4fa60ed48b452c77919d6473, type: 3}
   window_loading_prefab: {fileID: 2632683814581162851, guid: af7a7fddea11b0b4ca4aa617dd48a44e, type: 3}
   window_exit_prefab: {fileID: 2646574534074554939, guid: 93cb11e1d2cdb424f9711d3b049a4eb9, type: 3}
@@ -553,7 +554,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 687169fc80c58b645a5dacde47b4554f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!114 &6567307194208892893
+--- !u!114 &6901891455294966957
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -562,7 +563,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 5170736565810424376}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b1d87b8516cc5c9439258de0110fb665, type: 3}
+  m_Script: {fileID: 11500000, guid: 62edc94484b6d436da357b6f7885afba, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  carrot: {fileID: 5170736565810424378}
+  SERVER_WORKER_PUBLIC: https://json-worker.tranthienthanh93.workers.dev
+  SUPABASE_URL: https://sdrpptgncqqlizpvqdzr.supabase.co
+  SUPABASE_ANON_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNkcnBwdGduY3FxbGl6cHZxZHpyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk1MzIyMTUsImV4cCI6MjA3NTEwODIxNX0.Dtj9V0lVuU5dH2GQcH0HLXAdt2i4yreFgSE0-f7Dv0I '

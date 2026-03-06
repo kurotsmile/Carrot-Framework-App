@@ -86,7 +86,7 @@ namespace Carrot
         public Carrot_camera camera_pro;
         public Carrot_location location;
         public Carrot_Theme theme;
-        public Carrot_Server server;
+        public Carrot_Hub hub;
 
         [Header("Panel Obj")]
         public GameObject window_msg_prefab;

@@ -296,7 +296,7 @@ namespace Carrot
             carrot.show_loading();
             StructuredQuery q = new("order");
             q.Add_where("user_id", Query_OP.EQUAL, s_id_user);
-            carrot.server.Get_doc(q.ToJson(), Act_get_list_history_done, Act_server_fail);
+            carrot.hub.Get_doc(q.ToJson(), Act_get_list_history_done, Act_server_fail);
         }
 
         private void Act_get_list_history_done(string s_data)
@@ -401,7 +401,7 @@ namespace Carrot
             if (user_id == "") user_id = SystemInfo.deviceUniqueIdentifier;
             StructuredQuery q = new("order");
             q.Add_where("user_id", Query_OP.EQUAL, user_id);
-            carrot.server.Get_doc(q.ToJson(), Act_restore_carrot_pay_done, Act_server_fail);
+            carrot.hub.Get_doc(q.ToJson(), Act_restore_carrot_pay_done, Act_server_fail);
         }
 
         private void Act_restore_carrot_pay_done(string s_data)

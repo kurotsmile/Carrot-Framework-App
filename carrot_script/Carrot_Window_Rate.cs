@@ -90,7 +90,7 @@ namespace Carrot
             q.Add_where("name_en", Query_OP.EQUAL, this.carrot.Carrotstore_AppId);
             q.Add_select("rates");
             q.Set_limit(1);
-            this.carrot.server.Get_doc(q.ToJson(), Act_load_data_feedback_done, Act_submit_rate_feedback_fail);
+            this.carrot.hub.Get_doc(q.ToJson(), Act_load_data_feedback_done, Act_submit_rate_feedback_fail);
         }
 
         private void Act_load_data_feedback_done(string s_data)
@@ -125,8 +125,8 @@ namespace Carrot
 
             app["rates"] = rates;
             IDictionary app_data = (IDictionary)Json.Deserialize(JsonConvert.SerializeObject(app));
-            string s_json = this.carrot.server.Convert_IDictionary_to_json(app_data);
-            this.carrot.server.Update_Field_Document("app", this.carrot.Carrotstore_AppId, "rates", s_json, Act_submit_rate_feedback_done, Act_submit_rate_feedback_fail);
+            string s_json = this.carrot.hub.Convert_IDictionary_to_json(app_data);
+            this.carrot.hub.Update_Field_Document("app", this.carrot.Carrotstore_AppId, "rates", s_json, Act_submit_rate_feedback_done, Act_submit_rate_feedback_fail);
         }
 
         private void Act_submit_rate_feedback_done(string s_data)
@@ -160,7 +160,7 @@ namespace Carrot
             q.Add_where("name_en", Query_OP.EQUAL, this.carrot.Carrotstore_AppId);
             q.Add_select("rates");
             q.Set_limit(1);
-            this.carrot.server.Get_doc(q.ToJson(), Act_Load_rate_by_user_done, Act_Load_rate_by_user_fail);
+            this.carrot.hub.Get_doc(q.ToJson(), Act_Load_rate_by_user_done, Act_Load_rate_by_user_fail);
         }
 
         private void Act_Load_rate_by_user_done(string s_data)
