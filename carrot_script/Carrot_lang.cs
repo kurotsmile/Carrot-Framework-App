@@ -366,10 +366,7 @@ namespace Carrot
 
         public void Load_lang_emp()
         {
-            if (this.carrot.emp_show_lang != null)
-            {
-                for (int i = 0; i < this.carrot.emp_show_lang.key.Length; i++) if (this.Val(this.carrot.emp_show_lang.key[i]) != "") this.carrot.emp_show_lang.emp[i].text = this.Val(this.carrot.emp_show_lang.key[i]);
-            }
+            if (this.carrot.emp_show_lang != null) this.carrot.emp_show_lang.load_lang_emp(this);
         }
 
         public string Get_key_lang()
