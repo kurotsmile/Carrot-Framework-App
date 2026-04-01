@@ -319,7 +319,7 @@ MonoBehaviour:
   list_url_config:
   - https://raw.githubusercontent.com/kurotsmile/Database-Store-Json/main/config/carrot_framework_config.json
   - https://www.googleapis.com/drive/v3/files/164HKCBnFqiHlvQyTdn5bVN1xbKVrjUXB?alt=media&key=AIzaSyDKcjH_bDJz3EcqPdV5i62IZNVQ6EkyOFg
-  FileNameLangApp: MusicAppLangCustomer
+  FileNameLangApp: 
   model_app: 1
   os_app: 0
   store_public: 0
