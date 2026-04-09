@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Text.RegularExpressions;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UI;
@@ -17,7 +18,8 @@ namespace Carrot
 
         public UnityAction act_after_login_success;
 
-        private bool is_model_login_email = false;
+        private bool is_model_login_email = true;
+        private Carrot_Window_Loading windowLoadingCur = null;
 
         public void On_load(Carrot carrot)
         {
@@ -48,38 +50,44 @@ namespace Carrot
 
         public void btn_user_login()
         {
-            this.carrot.show_loading();
-            StructuredQuery q = new("user-" + this.carrot.lang.Get_key_lang());
-            q.Add_where("password", Query_OP.EQUAL, inp_login_password.text);
-            q.Set_limit(1);
-            if (this.is_model_login_email)
-                q.Add_where("email", Query_OP.EQUAL, inp_login_username.text);
-            else
-                q.Add_where("phone", Query_OP.EQUAL, inp_login_username.text);
-            this.carrot.server.Get_doc(q.ToJson(), Act_user_login_done, Act_user_login_fail);
+            if (!Regex.IsMatch(inp_login_username.text, @"^[^@\s]+@[^@\s]+\.[^@\s]+$"))
+            {
+                this.carrot.Show_msg(this.carrot.lang.Val("login", "Login"), this.carrot.lang.Val("error_email", "Invalid email format!"));
+                return;
+            }
+
+            if (inp_login_password.text.Trim().Length<5)
+            {
+                this.carrot.Show_msg(this.carrot.lang.Val("login", "Login"), this.carrot.lang.Val("error_passowrd_login", "Password must be greater than 6 characters!"));
+                return;
+            }
+
+            WWWForm frmLogin = new();
+            frmLogin.AddField("email", inp_login_username.text);
+            frmLogin.AddField("password", inp_login_password.text);
+            windowLoadingCur=carrot.send(carrot.url_worker+"/login",frmLogin,Act_user_login_done, Act_user_login_fail);
         }
 
         private void Act_user_login_done(string s_data)
         {
             Debug.Log("Login success:" + s_data);
             this.carrot.hide_loading();
-            Fire_Collection fc = new(s_data);
-            if (!fc.is_null)
+            windowLoadingCur.close();
+            IDictionary resData = (IDictionary)Json.Deserialize(s_data);
+            IDictionary userData = (IDictionary) resData["user"];
+            if (userData != null)
             {
                 if (this.is_model_login_email)
                     PlayerPrefs.SetString("login_username_mail", this.inp_login_username.text);
                 else
                     PlayerPrefs.SetString("login_username_phone", this.inp_login_username.text);
-
-                IDictionary u = fc.fire_document[0].Get_IDictionary();
-                u["user_id"] = u["id"].ToString();
-                this.carrot.user.set_data_user_login(u);
+                this.carrot.user.set_data_user_login(userData);
                 this.close();
                 
                 if (this.act_after_login_success != null) 
                     this.act_after_login_success();
                 else
-                    this.carrot.user.Show_info_user_by_data(u);
+                    this.carrot.user.Show_info_user_by_data(userData);
             }
             else
             {
@@ -89,7 +97,7 @@ namespace Carrot
 
         private void Act_user_login_fail(string s_error)
         {
-            this.carrot.hide_loading();
+            windowLoadingCur.close();
             this.carrot.Show_msg(this.carrot.lang.Val("login", "Login"), this.carrot.lang.Val("login_fail", "Login failed, please try again!"));
         }
 

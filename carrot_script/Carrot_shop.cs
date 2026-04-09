@@ -3,23 +3,17 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.Purchasing;
-using UnityEngine.Purchasing.Extension;
 
 namespace Carrot
 {
-    interface Carrot_shop_event
-    {
-        void Carrot_by_success(string s_id_product);
-        void Carrot_restore_success(string[] arr_id);
-    }
-
     public class Carrot_shop : MonoBehaviour, IDetailedStoreListener
     {
-        IStoreController m_StoreController;
-        IExtensionProvider extensions;
+        private IStoreController m_StoreController;
+        private IExtensionProvider extensions;
 
         private List<string> list_id_product;
         private Carrot carrot;
+
         public UnityAction<string> onCarrotPaySuccess;
         public UnityAction<string[]> onCarrotRestoreSuccess;
 
@@ -27,10 +21,11 @@ namespace Carrot
         private Carrot_Box box_shop;
 
         private string user_id_pay = "";
-        private string product_id_pay= "";
+        private string product_id_pay = "";
         private string order_id_pay = "";
         private string order_type_pay = "";
 
+        // --- Load IAP ---
         public void On_load(Carrot carrot)
         {
             this.carrot = carrot;
@@ -38,9 +33,8 @@ namespace Carrot
 
             if (this.carrot.pay_app == PayApp.UnitySDKPay)
             {
+                // Catalog file phải nằm ở Assets/Resources/BillingCatalog.json
                 var catalog = ProductCatalog.LoadDefaultCatalog();
-
-
                 var builder = ConfigurationBuilder.Instance(StandardPurchasingModule.Instance());
 
                 if (catalog.allProducts.Count > 0)
@@ -52,12 +46,19 @@ namespace Carrot
                     }
                     UnityPurchasing.Initialize(this, builder);
                 }
+                else
+                {
+                    this.carrot.log("BillingCatalog.json empty or not found!");
+                }
             }
-
-            if (this.carrot.pay_app == PayApp.CarrotPay)
+            else if (this.carrot.pay_app == PayApp.CarrotPay)
             {
                 var asset = Resources.Load("IAPProductCatalog") as TextAsset;
-                Debug.Log(asset);
+                if (asset == null)
+                {
+                    Debug.LogError("IAPProductCatalog.json not found in Resources!");
+                    return;
+                }
                 IDictionary data_inapp = (IDictionary)Json.Deserialize(asset.text);
                 list_product = (IList)data_inapp["products"];
 
@@ -68,6 +69,7 @@ namespace Carrot
             }
         }
 
+        // --- Buy product ---
         public void buy_product(int index_p)
         {
             this.carrot.play_sound_click();
@@ -77,11 +79,17 @@ namespace Carrot
             }
             else
             {
+                if (m_StoreController == null)
+                {
+                    this.carrot.log("StoreController not initialized!");
+                    return;
+                }
                 this.carrot.show_loading();
                 m_StoreController.InitiatePurchase(this.list_id_product[index_p]);
             }
         }
 
+        // --- Restore purchases ---
         public void restore_product()
         {
             this.carrot.play_sound_click();
@@ -92,73 +100,106 @@ namespace Carrot
         }
 
         #region Unity_Pay
+
         private void act_restore_unity_pay()
         {
-            if (Application.platform == RuntimePlatform.WSAPlayerX86 || Application.platform == RuntimePlatform.WSAPlayerX64 || Application.platform == RuntimePlatform.WSAPlayerARM)
+            try
             {
-                extensions.GetExtension<IMicrosoftExtensions>().RestoreTransactions();
+#if UNITY_WSA
+                if (Application.platform == RuntimePlatform.WSAPlayer)
+                {
+                    var microsoft = extensions.GetExtension<IMicrosoftStoreExtensions>();
+                    if (microsoft != null) microsoft.RestoreTransactions();
+                    else this.carrot.log("Microsoft Store extension not available");
+                }
+#elif UNITY_IOS || UNITY_TVOS || UNITY_STANDALONE_OSX
+                var apple = extensions.GetExtension<IAppleExtensions>();
+                if (apple != null)
+                {
+                    apple.RestoreTransactions((result, message) =>
+                    {
+                        this.carrot.log("Apple restore completed. Result: " + result + " | Message: " + message);
+                    });
+                }
+                else this.carrot.log("Apple extension not available");
+#elif UNITY_ANDROID
+                if (StandardPurchasingModule.Instance().appStore == AppStore.GooglePlay)
+                {
+                    var google = extensions.GetExtension<IGooglePlayStoreExtensions>();
+                    if (google != null)
+                    {
+                        google.RestoreTransactions((result, message) =>
+                        {
+                            this.carrot.log("Google Play restore completed. Result: " + result + " | Message: " + message);
+                        });
+                    }
+                    else this.carrot.log("Google Play extension not available");
+                }
+#else
+                this.carrot.log(Application.platform.ToString() + " not supported restore");
+#endif
             }
-            else if (Application.platform == RuntimePlatform.IPhonePlayer || Application.platform == RuntimePlatform.OSXPlayer || Application.platform == RuntimePlatform.tvOS)
+            catch (System.Exception e)
             {
-
-            }
-            else if (Application.platform == RuntimePlatform.Android && StandardPurchasingModule.Instance().appStore == AppStore.GooglePlay)
-            {
-
-            }
-            else
-            {
-                this.carrot.log(Application.platform.ToString() + " is not a supported platform for the Codeless IAP restore button");
+                this.carrot.log("Restore failed: " + e.Message);
             }
         }
-
 
         void OnTransactionsRestored(bool success)
         {
             if (success)
-                this.carrot.Show_msg(this.carrot.lang.Val("shop", "Shop"), this.carrot.lang.Val("shop_restore_success", "Successful recovery!"), Msg_Icon.Success);
+                this.carrot.Show_msg(this.carrot.lang.Val("shop", "Shop"),
+                    this.carrot.lang.Val("shop_restore_success", "Successful recovery!"), Msg_Icon.Success);
             else
-                this.carrot.Show_msg(this.carrot.lang.Val("shop", "Shop"), this.carrot.lang.Val("shop_restore_fail", "Restore failed!"), Msg_Icon.Error);
+                this.carrot.Show_msg(this.carrot.lang.Val("shop", "Shop"),
+                    this.carrot.lang.Val("shop_restore_fail", "Restore failed!"), Msg_Icon.Error);
         }
 
-        public string get_id_by_index(int index)
-        {
-            return this.list_id_product[index];
-        }
+        public string get_id_by_index(int index) => this.list_id_product[index];
 
-        void IStoreListener.OnInitializeFailed(InitializationFailureReason error)
-        {
-            this.carrot.log($"In-App Purchasing initialize failed: {error}");
-        }
-
-        PurchaseProcessingResult IStoreListener.ProcessPurchase(PurchaseEventArgs args)
-        {
-            var product = args.purchasedProduct;
-            this.carrot.hide_loading();
-            this.onCarrotPaySuccess.Invoke(product.definition.id);
-            this.carrot.log($"Purchase Complete - Product: {product.definition.id}");
-            return PurchaseProcessingResult.Complete;
-        }
-
-        void IStoreListener.OnPurchaseFailed(Product product, PurchaseFailureReason failureReason)
-        {
-            this.carrot.hide_loading();
-            this.carrot.Show_msg(this.carrot.lang.Val("shop", "Shop"), this.carrot.lang.Val("shop_buy_fail", "Purchase failed, Please check your account balance, or try again at another time"), Msg_Icon.Error);
-        }
-
-        void IStoreListener.OnInitialized(IStoreController controller, IExtensionProvider exten)
+        // --- IAP Callbacks ---
+        public void OnInitialized(IStoreController controller, IExtensionProvider exten)
         {
             this.extensions = exten;
+            this.m_StoreController = controller;
             this.carrot.log("In-App Purchasing successfully initialized");
-            m_StoreController = controller;
+        }
+
+        public void OnInitializeFailed(InitializationFailureReason error)
+        {
+            this.carrot.log($"IAP initialize failed: {error}");
         }
 
         public void OnInitializeFailed(InitializationFailureReason error, string message)
         {
-            throw new System.NotImplementedException();
+            this.carrot.log($"IAP initialize failed: {error}, Message: {message}");
         }
-        #endregion
 
+        public PurchaseProcessingResult ProcessPurchase(PurchaseEventArgs args)
+        {
+            var product = args.purchasedProduct;
+            this.carrot.hide_loading();
+            this.onCarrotPaySuccess?.Invoke(product.definition.id);
+            this.carrot.log($"Purchase Complete - Product: {product.definition.id}");
+
+            if (product.definition.type == ProductType.Consumable)
+            {
+                m_StoreController.ConfirmPendingPurchase(product);
+                return PurchaseProcessingResult.Complete; // FIXED
+            }
+            return PurchaseProcessingResult.Complete;
+        }
+
+        public void OnPurchaseFailed(Product product, PurchaseFailureDescription failureDescription)
+        {
+            this.carrot.hide_loading();
+            this.carrot.Show_msg(this.carrot.lang.Val("shop", "Shop"),
+                this.carrot.lang.Val("shop_buy_fail", "Purchase failed, Please check your account balance, or try again later"),
+                Msg_Icon.Error);
+            this.carrot.log($"Purchase failed: {product.definition.id}, Reason: {failureDescription.reason}, Message: {failureDescription.message}");
+        }
+
+        #endregion
         #region Carrot_Paypal
         private void Check_login_and_buy_product_paypal(IDictionary data_product)
         {
@@ -167,12 +208,12 @@ namespace Carrot
             string user_id = carrot.user.get_id_user_login();
             string user_lang = carrot.lang.Get_key_lang();
             string user_name = "";
-           
+
             if (user_id != "")
             {
                 user_lang = carrot.user.get_lang_user_login();
                 user_name = carrot.user.get_data_user_login("name");
-            }  
+            }
             else
                 user_id = SystemInfo.deviceUniqueIdentifier;
 
@@ -187,9 +228,7 @@ namespace Carrot
 
             string name_product = defaultDescription["title"].ToString();
 
-            box_shop=this.carrot.Create_Box();
-            box_shop.set_title(name_product);
-            box_shop.set_icon(this.carrot.icon_carrot_buy);
+            box_shop = this.carrot.Create_Box(name_product, this.carrot.icon_carrot_buy);
 
             Carrot_Box_Btn_Item btn_history = box_shop.create_btn_menu_header(carrot.sp_icon_restore);
             btn_history.set_act(() => Show_history_pay(user_id));
@@ -202,22 +241,22 @@ namespace Carrot
             Carrot_Box_Item item_price = box_shop.create_item("item_price");
             item_price.set_icon(carrot.icon_carrot_price);
             item_price.set_title("Price of product");
-            item_price.set_tip(price_product+"$");
+            item_price.set_tip(price_product + "$");
 
-            Carrot_Box_Item item_type= box_shop.create_item("item_type");
+            Carrot_Box_Item item_type = box_shop.create_item("item_type");
             item_type.set_icon(carrot.icon_carrot_all_category);
             item_type.set_title("Type");
-            if (this.order_type_pay== "0")
+            if (this.order_type_pay == "0")
                 item_type.set_tip("Consumable");
             else
                 item_type.set_tip("No Consumable");
 
             var url_paypal = carrot.mainhost + "?page=pay&id=" + data_product["id"].ToString() + "&title=" + defaultDescription["title"].ToString() + "&description=" + defaultDescription["description"].ToString();
-            url_paypal += "&price="+price_product;
-            url_paypal += "&user_id="+user_id;
-            url_paypal += "&user_lang="+user_lang;
-            url_paypal += "&type="+order_type_pay;
-            url_paypal += "&id_order="+order_id_pay;
+            url_paypal += "&price=" + price_product;
+            url_paypal += "&user_id=" + user_id;
+            url_paypal += "&user_lang=" + user_lang;
+            url_paypal += "&type=" + order_type_pay;
+            url_paypal += "&id_order=" + order_id_pay;
             if (user_name != "") url_paypal += "&user_name=" + user_name;
 
             Carrot_Box_Btn_Panel panel_btn = box_shop.create_panel_btn();
@@ -230,7 +269,7 @@ namespace Carrot
 
             Carrot_Button_Item btn_share = panel_btn.create_btn();
             btn_share.set_icon_white(carrot.sp_icon_share);
-            btn_share.set_label(this.carrot.lang.Val("share","Share"));
+            btn_share.set_label(this.carrot.lang.Val("share", "Share"));
             btn_share.set_label_color(Color.white);
             btn_share.set_bk_color(carrot.color_highlight);
             btn_share.set_act_click(() => carrot.show_share(url_paypal, "Ask someone else to buy this product for you!"));
@@ -244,7 +283,7 @@ namespace Carrot
 
             Carrot_Button_Item btn_cancel = panel_btn.create_btn();
             btn_cancel.set_icon_white(carrot.icon_carrot_cancel);
-            btn_cancel.set_label(this.carrot.lang.Val("cancel","Cancel"));
+            btn_cancel.set_label(this.carrot.lang.Val("cancel", "Cancel"));
             btn_cancel.set_label_color(Color.white);
             btn_cancel.set_bk_color(carrot.color_highlight);
             btn_cancel.set_act_click(() => Close_box_carrot_pay());
@@ -257,7 +296,7 @@ namespace Carrot
             carrot.show_loading();
             StructuredQuery q = new("order");
             q.Add_where("user_id", Query_OP.EQUAL, s_id_user);
-            carrot.server.Get_doc(q.ToJson(),Act_get_list_history_done,Act_server_fail);
+            carrot.hub.Get_doc(q.ToJson(), Act_get_list_history_done, Act_server_fail);
         }
 
         private void Act_get_list_history_done(string s_data)
@@ -266,11 +305,9 @@ namespace Carrot
             Fire_Collection fc = new(s_data);
             if (!fc.is_null)
             {
-                Carrot_Box box_history = carrot.Create_Box();
-                box_history.set_title("History Pay");
-                box_history.set_icon(carrot.sp_icon_restore);
+                Carrot_Box box_history = carrot.Create_Box("History Pay", carrot.sp_icon_restore);
 
-                for(int i=0;i<fc.fire_document.Length;i++)
+                for (int i = 0; i < fc.fire_document.Length; i++)
                 {
                     IDictionary data_history = fc.fire_document[i].Get_IDictionary();
                     var id_product = data_history["id_product"].ToString();
@@ -312,7 +349,7 @@ namespace Carrot
 
         private void Close_box_carrot_pay()
         {
-            if(carrot!=null) carrot.play_sound_click();
+            if (carrot != null) carrot.play_sound_click();
             product_id_pay = "";
             user_id_pay = "";
             if (box_shop != null) box_shop.close();
@@ -321,40 +358,33 @@ namespace Carrot
         private void On_paypal(string url_pay)
         {
             carrot.play_sound_click();
-            Application.OpenURL(url_pay);
+            string safeUrl = url_pay.Replace(" ", "%20");
+            safeUrl = System.Uri.EscapeUriString(url_pay);
+
+            Application.OpenURL(safeUrl);
         }
 
         private void OnApplicationFocus(bool hasFocus)
         {
-            if (hasFocus==true&&this.product_id_pay!="") Check_pay();
+            if (hasFocus == true && this.product_id_pay != "") Check_pay();
         }
 
         private void Check_pay()
         {
-            this.carrot.show_loading();
-            Debug.Log("Check pay (" + this.product_id_pay + " - "+this.user_id_pay+") from server...");
-            StructuredQuery q = new("order");
-            if (this.order_type_pay == "1")
-            {
-                q.Add_where("user_id", Query_OP.EQUAL, user_id_pay);
-                q.Add_where("id_product", Query_OP.EQUAL, this.product_id_pay);
-            }
-            else
-            {
-                q.Add_where("id_order", Query_OP.EQUAL, this.order_id_pay);
-            }
-            carrot.server.Get_doc(q.ToJson(), Check_pay_done, Act_server_fail);
+            WWWForm frmCheckPay = new();
+            frmCheckPay.AddField("user_id", user_id_pay);
+            frmCheckPay.AddField("product_id", product_id_pay);
+            carrot.send(carrot.url_worker + "/check_pay", frmCheckPay, Check_pay_done, Act_server_fail);
         }
 
         private void Check_pay_done(string s_data)
         {
-            this.carrot.hide_loading();
-            Fire_Collection fc = new(s_data);
-            if (!fc.is_null)
+            IDictionary dataItem = (IDictionary)Json.Deserialize(s_data);
+            if (dataItem["order"] != null)
             {
+                IDictionary orderData = dataItem["order"] as IDictionary;
                 this.Reset_session_carrot_pay();
-                IDictionary data_pay = fc.fire_document[0].Get_IDictionary();
-                onCarrotPaySuccess?.Invoke(data_pay["id_product"].ToString());
+                onCarrotPaySuccess?.Invoke(orderData["product_id"].ToString());
                 if (box_shop != null) box_shop.close();
             }
             else
@@ -368,10 +398,10 @@ namespace Carrot
         {
             carrot.show_loading();
             string user_id = carrot.user.get_id_user_login();
-            if (user_id=="") user_id = SystemInfo.deviceUniqueIdentifier;
+            if (user_id == "") user_id = SystemInfo.deviceUniqueIdentifier;
             StructuredQuery q = new("order");
-            q.Add_where("user_id",Query_OP.EQUAL,user_id);
-            carrot.server.Get_doc(q.ToJson(), Act_restore_carrot_pay_done, Act_server_fail);
+            q.Add_where("user_id", Query_OP.EQUAL, user_id);
+            carrot.hub.Get_doc(q.ToJson(), Act_restore_carrot_pay_done, Act_server_fail);
         }
 
         private void Act_restore_carrot_pay_done(string s_data)
@@ -384,7 +414,7 @@ namespace Carrot
                 this.OnTransactionsRestored(true);
                 IList list_inapp_restore = (IList)Json.Deserialize("[]");
 
-                for(int i = 0; i < fc.fire_document.Length; i++)
+                for (int i = 0; i < fc.fire_document.Length; i++)
                 {
                     IDictionary data_in_app = fc.fire_document[i].Get_IDictionary();
                     if (data_in_app["status"].ToString() == "COMPLETED")
@@ -415,11 +445,14 @@ namespace Carrot
             order_id_pay = "";
         }
 
-        public void OnPurchaseFailed(Product product, PurchaseFailureDescription failureDescription)
-        {
-            throw new System.NotImplementedException();
-        }
         #endregion
-
+        public void OnPurchaseFailed(Product product, PurchaseFailureReason failureReason)
+        {
+            carrot.log("Purchase failed: " + product.definition.id + " | Reason: " + failureReason);
+            carrot.hide_loading();
+            carrot.Show_msg(this.carrot.lang.Val("shop", "Shop"),
+            carrot.lang.Val("shop_buy_fail", "Purchase failed, Please check your account balance, or try again later\n" + failureReason),
+            Msg_Icon.Error);
+        }
     }
 }

@@ -1424,6 +1424,8 @@ MonoBehaviour:
   tip: {fileID: 8768427302156822005}
   inp_text: {fileID: 8768427303326984662}
   inp_slider: {fileID: 6901001631942183265}
+  tr_all_btn: {fileID: 1938478628383341712}
+  item_btn_prefab: {fileID: 4624414455044603842, guid: 84a322a890d067b41a10d12511bfcd70, type: 3}
 --- !u!114 &8491420221545177079
 MonoBehaviour:
   m_ObjectHideFlags: 0

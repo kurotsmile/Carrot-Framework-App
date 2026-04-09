@@ -17,9 +17,10 @@ namespace Carrot
             this.act_click = act_click;
         }
 
-        public void set_icon(Sprite sp)
+        public Carrot_Box_Btn_Item set_icon(Sprite sp)
         {
             this.icon.sprite = sp;
+            return this;
         }
 
         public void set_icon_color(Color32 color)

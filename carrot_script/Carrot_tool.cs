@@ -189,6 +189,14 @@ namespace Carrot
                 System.IO.File.WriteAllText(Application.persistentDataPath + "/" + name_file_save, data_text);
         }
 
+        public string GetPathFile(string name_file)
+        {
+            if (Application.isEditor)
+                return Application.dataPath + "/" + name_file;
+            else
+                return Application.persistentDataPath + "/" + name_file;
+        }
+
         public void create_folder(string s_name_folder)
         {
             if (Application.isEditor)
@@ -309,6 +317,21 @@ namespace Carrot
                 Sprite sprite = Sprite.Create(load_s01_texture, new Rect(0, 0, load_s01_texture.width, load_s01_texture.height), new Vector2(0, 0));
                 img.sprite = sprite;
                 img.color = Color.white;
+            }
+        }
+
+        public void Load_File_Text(string name_file,UnityAction<string> act)
+        {
+            string name_file_read;
+            if (Application.isEditor)
+                name_file_read = Application.dataPath + "/" + name_file;
+            else
+                name_file_read = Application.persistentDataPath + "/" + name_file;
+
+            if (System.IO.File.Exists(name_file_read))
+            {
+                string content = System.IO.File.ReadAllText(name_file_read);
+                act?.Invoke(content);
             }
         }
 
