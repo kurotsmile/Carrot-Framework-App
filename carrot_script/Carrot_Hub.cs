@@ -113,6 +113,48 @@ public class Carrot_Hub : MonoBehaviour
         }, act_fail);
     }
 
+    public void Get_doc_by_path(string collectionId, string documentId, UnityAction<string> act_done = null, UnityAction<string> act_fail = null)
+    {
+        if (string.IsNullOrEmpty(collectionId))
+        {
+            act_fail?.Invoke("Missing collectionId");
+            return;
+        }
+
+        if (string.IsNullOrEmpty(documentId))
+        {
+            act_fail?.Invoke("Missing documentId");
+            return;
+        }
+
+        Dictionary<string, object> filters = new()
+        {
+            { "id", documentId },
+            { "limit", 1 },
+            { "page", 1 }
+        };
+
+        this.ReadTable(collectionId, filters, s_data =>
+        {
+            IList rows = this.Normalize_rows(s_data);
+            if (rows.Count == 0)
+            {
+                act_fail?.Invoke($"Document {documentId} does not exist!");
+                return;
+            }
+
+            IDictionary row = rows[0] as IDictionary;
+            if (row == null)
+            {
+                act_fail?.Invoke("Invalid document data");
+                return;
+            }
+
+            string result = this.To_firestore_document_result(row, collectionId, documentId);
+            act_done?.Invoke(result);
+        }, act_fail);
+    }
+
     public string Convert_IDictionary_to_json(IDictionary obj_IDictionary)
     {
         return Carrot.Json.Serialize(obj_IDictionary);
@@ -147,6 +189,78 @@ public class Carrot_Hub : MonoBehaviour
             act_done?.Invoke(req.downloadHandler.text);
         else
             act_fail?.Invoke(string.IsNullOrEmpty(req.downloadHandler.text) ? req.error : req.downloadHandler.text);
+    }
+
+    public void SearchSong(string query, string lang, int page, int limit, UnityAction<string> actDone, UnityAction<string> actErr, string userId = "", bool logSearch = false)
+    {
+        Dictionary<string, string> queryParams = new();
+        if (!string.IsNullOrEmpty(query)) queryParams["q"] = query;
+        if (!string.IsNullOrEmpty(lang)) queryParams["lang"] = lang;
+        if (!string.IsNullOrEmpty(userId)) queryParams["userId"] = userId;
+        queryParams["page"] = Math.Max(1, page).ToString();
+        queryParams["limit"] = Math.Max(1, limit).ToString();
+        queryParams["log"] = logSearch ? "1" : "0";
+        StartCoroutine(GetWorkerS("/search_song", queryParams, actDone, actErr));
+    }
+
+    public void AddReport(string email, string type, string message, string userId, string objectId, UnityAction<string> actDone, UnityAction<string> actErr)
+    {
+        IDictionary payload = new Dictionary<string, object>
+        {
+            { "email", email ?? "" },
+            { "type", type ?? "" },
+            { "message", message ?? "" },
+            { "userId", userId ?? "" },
+            { "object_id", objectId ?? "" }
+        };
+        StartCoroutine(PostWorkerS("/add_report", payload, actDone, actErr));
+    }
+
+    private IEnumerator GetWorkerS(string path, Dictionary<string, string> queryParams, UnityAction<string> actDone, UnityAction<string> actErr)
+    {
+        string url = this.Build_worker_url(path, queryParams);
+        UnityWebRequest req = UnityWebRequest.Get(url);
+
+        yield return req.SendWebRequest();
+
+        if (req.result == UnityWebRequest.Result.Success)
+            actDone?.Invoke(req.downloadHandler.text);
+        else
+            actErr?.Invoke(string.IsNullOrEmpty(req.downloadHandler.text) ? req.error : req.downloadHandler.text);
+    }
+
+    private IEnumerator PostWorkerS(string path, object payload, UnityAction<string> actDone, UnityAction<string> actErr)
+    {
+        string url = SERVER_WORKER_PUBLIC + path;
+        byte[] body = System.Text.Encoding.UTF8.GetBytes(Carrot.Json.Serialize(payload));
+        UnityWebRequest req = new(url, "POST");
+        req.uploadHandler = new UploadHandlerRaw(body);
+        req.downloadHandler = new DownloadHandlerBuffer();
+        req.SetRequestHeader("Content-Type", "application/json");
+
+        yield return req.SendWebRequest();
+
+        if (req.result == UnityWebRequest.Result.Success)
+            actDone?.Invoke(req.downloadHandler.text);
+        else
+            actErr?.Invoke(string.IsNullOrEmpty(req.downloadHandler.text) ? req.error : req.downloadHandler.text);
+    }
+
+    private string Build_worker_url(string path, Dictionary<string, string> queryParams)
+    {
+        string url = SERVER_WORKER_PUBLIC + path;
+        if (queryParams == null || queryParams.Count == 0) return url;
+
+        List<string> parts = new();
+        foreach (var pair in queryParams)
+        {
+            if (string.IsNullOrEmpty(pair.Key)) continue;
+            string val = pair.Value ?? "";
+            parts.Add(Uri.EscapeDataString(pair.Key) + "=" + Uri.EscapeDataString(val));
+        }
+
+        if (parts.Count == 0) return url;
+        return url + "?" + string.Join("&", parts);
     }
 
     public string GetUrlFile(string nameFile)
@@ -300,6 +414,17 @@ public class Carrot_Hub : MonoBehaviour
         }
 
         return Carrot.Json.Serialize(result);
+    }
+
+    private string To_firestore_document_result(IDictionary row, string table, string id)
+    {
+        IDictionary document = new Dictionary<string, object>
+        {
+            { "name", "projects/carrotstore/databases/(default)/documents/" + table + "/" + id },
+            { "fields", this.To_firestore_fields(row) }
+        };
+
+        return Carrot.Json.Serialize(document);
     }
 
     private IList Normalize_rows(string s_data)

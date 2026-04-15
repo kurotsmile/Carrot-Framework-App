@@ -316,9 +316,6 @@ MonoBehaviour:
   url_worker: https://json-worker.tranthienthanh93.workers.dev
   key_api_rest_firestore: 
   key_api_google_location_map: 
-  list_url_config:
-  - https://raw.githubusercontent.com/kurotsmile/Database-Store-Json/main/config/carrot_framework_config.json
-  - https://www.googleapis.com/drive/v3/files/164HKCBnFqiHlvQyTdn5bVN1xbKVrjUXB?alt=media&key=AIzaSyDKcjH_bDJz3EcqPdV5i62IZNVQ6EkyOFg
   FileNameLangApp: 
   model_app: 1
   os_app: 0

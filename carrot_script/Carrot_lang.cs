@@ -1,4 +1,6 @@
 using System.Collections;
+using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.Networking;
@@ -26,8 +28,11 @@ namespace Carrot
         private IDictionary DataFrameworkUnity_en = null;
         private IDictionary DataLangApp = null;
         private IDictionary DataLangApp_en = null;
-        private string NameFileCustomerListCountry = "ListCountryCustomer";
         private string NameFileCustomerFrw = "FrameworkLangCustomer";
+        private const string CountryCacheDataKey = "carrot_country_cache_data";
+        private const string CountryCacheTimeKey = "carrot_country_cache_time";
+        private const double CountryCacheDays = 7d;
+        private bool is_loading_country_data = false;
 
         public void On_load(Carrot carrot)
         {
@@ -59,8 +64,10 @@ namespace Carrot
                 }
             }
 
+            this.Try_load_country_data_from_cache();
             this.LoadData();
             this.Load_icon_lang();
+            this.Refresh_country_data_if_needed(false);
             this.Load_lang_emp();
         }
 
@@ -81,7 +88,22 @@ namespace Carrot
         private void Load_icon_lang()
         {
             Sprite sp_lang_icon = carrot.get_tool().get_sprite_to_playerPrefs("icon_" + this.s_lang_key) ?? this.sp_lang_default_en;
-            if (this.carrot.emp_show_lang != null) for (int i = 0; i < this.carrot.emp_show_lang.List_img_change_icon_lang.Length; i++) this.carrot.emp_show_lang.List_img_change_icon_lang[i].sprite = sp_lang_icon;
+            if (sp_lang_icon == this.sp_lang_default_en)
+            {
+                IDictionary data_lang = this.Find_country_by_key(this.s_lang_key);
+                Image img_target = this.Get_lang_icon_target();
+                if (data_lang != null && img_target != null && data_lang["icon"] != null && data_lang["icon"].ToString() != "")
+                {
+                    this.carrot.get_img_and_save_playerPrefs(data_lang["icon"].ToString(), img_target, "icon_" + this.s_lang_key, tex =>
+                    {
+                        this.Load_icon_lang();
+                    });
+                    sp_lang_icon = img_target.sprite ?? this.sp_lang_default_en;
+                }
+            }
+            if (this.carrot.emp_show_lang != null && this.carrot.emp_show_lang.List_img_change_icon_lang != null)
+                for (int i = 0; i < this.carrot.emp_show_lang.List_img_change_icon_lang.Length; i++)
+                    this.carrot.emp_show_lang.List_img_change_icon_lang[i].sprite = sp_lang_icon;
         }
 
         public Sprite Get_sp_lang_cur()
@@ -99,23 +121,21 @@ namespace Carrot
             this.carrot.play_sound_click();
             this.act_after_selecting_lang = null;
 
-            if (this.DataListCountry == null)
+            if (this.DataListCountry == null || this.DataListCountry.Count == 0)
             {
-                TextAsset data_list_lang = Resources.Load<TextAsset>(this.NameFileCustomerListCountry);
-                if (data_list_lang != null)
-                {
-                    DataListCountry = Json.Deserialize(data_list_lang.text) as IList;
-                    this.Load_list_lang_by_data(DataListCountry);
-                }
-                else
-                {
-                    data_list_lang = Resources.Load<TextAsset>("ListCountry");
-                    DataListCountry = Json.Deserialize(data_list_lang.text) as IList;
-                    this.Load_list_lang_by_data(DataListCountry);
-                }
+                this.Try_load_country_data_from_cache();
+            }
+
+            if (this.DataListCountry != null && this.DataListCountry.Count > 0)
+            {
+                this.Load_list_lang_by_data(DataListCountry);
+                this.Refresh_country_data_if_needed(this.box_lang != null);
             }
             else
-                this.Load_list_lang_by_data(DataListCountry);
+            {
+                this.Refresh_country_data_if_needed(true);
+                if (this.carrot.is_offline()) this.carrot.Show_msg(this.carrot.lang.Val("sel_lang_app", "Choose your language and country"), this.carrot.lang.Val("list_none", "List is empty, no items found!"));
+            }
         }
 
         private void Load_list_lang_by_data(IList all_item)
@@ -296,7 +316,7 @@ namespace Carrot
 
         private void UpdateDataListCountry()
         {
-            this.carrot.get_tool().save_file("Resources/" + this.NameFileCustomerListCountry + ".json", Json.Serialize(this.DataListCountry));
+            this.Save_country_cache(this.DataListCountry);
         }
 
         private void UpdateDataLangApp()
@@ -362,6 +382,136 @@ namespace Carrot
                 this.Select_lang(s_key);
             });
             return item_lang;
+        }
+
+        private Image Get_lang_icon_target()
+        {
+            if (this.carrot.emp_show_lang == null || this.carrot.emp_show_lang.List_img_change_icon_lang == null) return null;
+            for (int i = 0; i < this.carrot.emp_show_lang.List_img_change_icon_lang.Length; i++)
+            {
+                if (this.carrot.emp_show_lang.List_img_change_icon_lang[i] != null)
+                    return this.carrot.emp_show_lang.List_img_change_icon_lang[i];
+            }
+            return null;
+        }
+
+        private IDictionary Find_country_by_key(string s_key)
+        {
+            if (this.DataListCountry == null) return null;
+            for (int i = 0; i < this.DataListCountry.Count; i++)
+            {
+                IDictionary data_lang = this.DataListCountry[i] as IDictionary;
+                if (data_lang == null || data_lang["key"] == null) continue;
+                if (string.Equals(data_lang["key"].ToString(), s_key, StringComparison.OrdinalIgnoreCase))
+                    return data_lang;
+            }
+            return null;
+        }
+
+        private bool Is_country_cache_fresh()
+        {
+            string s_cache_time = PlayerPrefs.GetString(CountryCacheTimeKey, "");
+            if (s_cache_time == "") return false;
+            if (!DateTime.TryParse(s_cache_time, null, System.Globalization.DateTimeStyles.RoundtripKind, out DateTime cache_time)) return false;
+            return (DateTime.UtcNow - cache_time) <= TimeSpan.FromDays(CountryCacheDays);
+        }
+
+        private void Save_country_cache(IList list_country)
+        {
+            if (list_country == null) return;
+            PlayerPrefs.SetString(CountryCacheDataKey, Json.Serialize(list_country));
+            PlayerPrefs.SetString(CountryCacheTimeKey, DateTime.UtcNow.ToString("o"));
+            PlayerPrefs.Save();
+        }
+
+        private bool Try_load_country_data_from_cache()
+        {
+            string s_cache = PlayerPrefs.GetString(CountryCacheDataKey, "");
+            if (s_cache == "") return false;
+            IList list_country = this.Normalize_country_list(Json.Deserialize(s_cache));
+            if (list_country == null || list_country.Count == 0) return false;
+            this.DataListCountry = list_country;
+            return true;
+        }
+
+        private IList Normalize_country_list(object data_raw)
+        {
+            IList source_list = data_raw as IList;
+            if (source_list == null)
+            {
+                IDictionary data_obj = data_raw as IDictionary;
+                if (data_obj != null)
+                {
+                    if (data_obj["items"] is IList items) source_list = items;
+                    else if (data_obj["data"] is IList data) source_list = data;
+                }
+            }
+
+            IList list_country = Json.Deserialize("[]") as IList;
+            if (source_list == null) return list_country;
+
+            for (int i = 0; i < source_list.Count; i++)
+            {
+                IDictionary row = source_list[i] as IDictionary;
+                if (row == null) continue;
+
+                IDictionary item = Json.Deserialize("{}") as IDictionary;
+                foreach (DictionaryEntry entry in row) item[entry.Key.ToString()] = entry.Value;
+
+                string s_key = "";
+                if (row["id"] != null) s_key = row["id"].ToString();
+                else if (row["key"] != null) s_key = row["key"].ToString();
+                else if (row["key_country"] != null) s_key = row["key_country"].ToString();
+
+                item["key"] = s_key;
+                if (item["name"] == null) item["name"] = s_key;
+                if (item["icon"] == null) item["icon"] = "";
+                if (item["icon"].ToString() != "") item["icon"] = this.carrot.GetUrlFile(item["icon"].ToString());
+                list_country.Add(item);
+            }
+
+            return list_country;
+        }
+
+        private void Refresh_country_data_if_needed(bool reload_ui_when_done)
+        {
+            if (this.carrot == null || this.carrot.hub == null || this.carrot.is_offline()) return;
+            if (this.is_loading_country_data) return;
+            if (!reload_ui_when_done && this.DataListCountry != null && this.DataListCountry.Count > 0 && this.Is_country_cache_fresh()) return;
+
+            this.is_loading_country_data = true;
+            Dictionary<string, object> filters = new()
+            {
+                { "limit", 300 },
+                { "page", 1 },
+                { "order_key", "name" },
+                { "order_type", "ASC" }
+            };
+
+            this.carrot.hub.ReadTable("country", filters, s_data =>
+            {
+                this.is_loading_country_data = false;
+                IList list_country = this.Normalize_country_list(Json.Deserialize(s_data));
+                if (list_country == null || list_country.Count == 0)
+                {
+                    if (reload_ui_when_done) this.carrot.hide_loading();
+                    return;
+                }
+
+                this.DataListCountry = list_country;
+                this.Save_country_cache(list_country);
+                this.Load_icon_lang();
+
+                if (reload_ui_when_done || this.box_lang != null)
+                    this.Load_list_lang_by_data(this.DataListCountry);
+            }, s_error =>
+            {
+                this.is_loading_country_data = false;
+                if (reload_ui_when_done && this.DataListCountry != null && this.DataListCountry.Count > 0)
+                    this.Load_list_lang_by_data(this.DataListCountry);
+                else if (reload_ui_when_done)
+                    this.carrot.hide_loading();
+            });
         }
 
         public void Load_lang_emp()
