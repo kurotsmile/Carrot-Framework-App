@@ -28,7 +28,7 @@ namespace Carrot
         public string mainhost = "https://carrotstore.web.app";
         public string url_worker = "https://json-worker.tranthienthanh93.workers.dev";
         public string key_api_google_location_map = "";
-        [Tooltip("Không bao gồm phần mở rộng (.json) và file phải nằm trong thư mục Resources")]
+        [Tooltip("Không bao gồm phần mở rộng (.json). Có thể nhập đường dẫn tương đối từ Resources, ví dụ DataAiLover/app_lang")]
         public string FileNameLangApp = "";
 
         [Header("Config App")]

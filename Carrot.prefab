@@ -312,9 +312,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 99072c8f0c1c9014fa8cd890c4a3da76, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  mainhost: https://carrotstore.web.app
+  mainhost: https://carrot28.com
   url_worker: https://json-worker.tranthienthanh93.workers.dev
-  key_api_rest_firestore: 
   key_api_google_location_map: 
   FileNameLangApp: 
   model_app: 1
@@ -341,7 +340,7 @@ MonoBehaviour:
   setting_vibrate: 1
   setting_soundtrack: 1
   setting_theme: 1
-  SettingSupport: 1
+  SettingSupport: 0
   lang: {fileID: 292901969}
   user: {fileID: 4645516730937484055}
   shop: {fileID: 1069686049}
@@ -563,6 +562,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 62edc94484b6d436da357b6f7885afba, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  SERVER_WORKER_PUBLIC: https://json-worker.tranthienthanh93.workers.dev
   SUPABASE_URL: https://sdrpptgncqqlizpvqdzr.supabase.co
   SUPABASE_ANON_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNkcnBwdGduY3FxbGl6cHZxZHpyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk1MzIyMTUsImV4cCI6MjA3NTEwODIxNX0.Dtj9V0lVuU5dH2GQcH0HLXAdt2i4yreFgSE0-f7Dv0I '

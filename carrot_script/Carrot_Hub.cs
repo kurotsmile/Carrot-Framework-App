@@ -4,12 +4,18 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.Networking;
-
+namespace Carrot
+{
 public class Carrot_Hub : MonoBehaviour
 {
-    public string SERVER_WORKER_PUBLIC;
     public string SUPABASE_URL;
     public string SUPABASE_ANON_KEY;
+
+    private string GetServerWorkerPublic()
+    {
+        Carrot carrot = this.GetComponent<Carrot>();
+        return carrot != null ? carrot.url_worker : "";
+    }
 
     public void ReadTable(string nameTable, UnityAction<string> actDone, UnityAction<string> actErr)
     {
@@ -28,7 +34,7 @@ public class Carrot_Hub : MonoBehaviour
         UnityAction<string> onError
     )
     {
-        string url = SERVER_WORKER_PUBLIC + "/read_table";
+        string url = this.GetServerWorkerPublic() + "/read_table";
 
         Dictionary<string, object> data = new()
         {
@@ -49,7 +55,7 @@ public class Carrot_Hub : MonoBehaviour
             { "data", data }
         };
 
-        string json = Carrot.Json.Serialize(payload);
+        string json = Json.Serialize(payload);
         byte[] jsonBytes = System.Text.Encoding.UTF8.GetBytes(json);
 
         UnityWebRequest req = new(url, "POST");
@@ -68,7 +74,7 @@ public class Carrot_Hub : MonoBehaviour
     // Compatibility layer: accepts previous StructuredQuery JSON and returns Firestore-like runQuery result.
     public void Get_doc(string query, UnityAction<string> act_done = null, UnityAction<string> act_fail = null)
     {
-        IDictionary root = Carrot.Json.Deserialize(query) as IDictionary;
+        IDictionary root = Json.Deserialize(query) as IDictionary;
         if (root == null)
         {
             act_fail?.Invoke("Invalid query json");
@@ -157,7 +163,7 @@ public class Carrot_Hub : MonoBehaviour
 
     public string Convert_IDictionary_to_json(IDictionary obj_IDictionary)
     {
-        return Carrot.Json.Serialize(obj_IDictionary);
+        return Json.Serialize(obj_IDictionary);
     }
 
     public void Update_Field_Document(string collectionId, string documentId, string fieldID, string jsonData, UnityAction<string> act_done = null, UnityAction<string> act_fail = null)
@@ -167,7 +173,7 @@ public class Carrot_Hub : MonoBehaviour
 
     private IEnumerator UpdateFieldDocumentS(string collectionId, string documentId, string fieldID, string jsonData, UnityAction<string> act_done, UnityAction<string> act_fail)
     {
-        string url = SERVER_WORKER_PUBLIC + "/update_field_document";
+        string url = this.GetServerWorkerPublic() + "/update_field_document";
 
         IDictionary payload = new Dictionary<string, object>
         {
@@ -177,7 +183,7 @@ public class Carrot_Hub : MonoBehaviour
             { "data", this.Try_parse_json(jsonData) }
         };
 
-        byte[] body = System.Text.Encoding.UTF8.GetBytes(Carrot.Json.Serialize(payload));
+        byte[] body = System.Text.Encoding.UTF8.GetBytes(Json.Serialize(payload));
         UnityWebRequest req = new(url, "POST");
         req.uploadHandler = new UploadHandlerRaw(body);
         req.downloadHandler = new DownloadHandlerBuffer();
@@ -231,8 +237,8 @@ public class Carrot_Hub : MonoBehaviour
 
     private IEnumerator PostWorkerS(string path, object payload, UnityAction<string> actDone, UnityAction<string> actErr)
     {
-        string url = SERVER_WORKER_PUBLIC + path;
-        byte[] body = System.Text.Encoding.UTF8.GetBytes(Carrot.Json.Serialize(payload));
+        string url = this.GetServerWorkerPublic() + path;
+        byte[] body = System.Text.Encoding.UTF8.GetBytes(Json.Serialize(payload));
         UnityWebRequest req = new(url, "POST");
         req.uploadHandler = new UploadHandlerRaw(body);
         req.downloadHandler = new DownloadHandlerBuffer();
@@ -248,7 +254,7 @@ public class Carrot_Hub : MonoBehaviour
 
     private string Build_worker_url(string path, Dictionary<string, string> queryParams)
     {
-        string url = SERVER_WORKER_PUBLIC + path;
+        string url = this.GetServerWorkerPublic() + path;
         if (queryParams == null || queryParams.Count == 0) return url;
 
         List<string> parts = new();
@@ -370,7 +376,7 @@ public class Carrot_Hub : MonoBehaviour
         if (string.IsNullOrEmpty(json)) return "";
         try
         {
-            object parsed = Carrot.Json.Deserialize(json);
+            object parsed = Json.Deserialize(json);
             return parsed ?? json;
         }
         catch
@@ -413,7 +419,7 @@ public class Carrot_Hub : MonoBehaviour
             });
         }
 
-        return Carrot.Json.Serialize(result);
+        return Json.Serialize(result);
     }
 
     private string To_firestore_document_result(IDictionary row, string table, string id)
@@ -424,12 +430,12 @@ public class Carrot_Hub : MonoBehaviour
             { "fields", this.To_firestore_fields(row) }
         };
 
-        return Carrot.Json.Serialize(document);
+        return Json.Serialize(document);
     }
 
     private IList Normalize_rows(string s_data)
     {
-        object parsed = Carrot.Json.Deserialize(s_data);
+        object parsed = Json.Deserialize(s_data);
         if (parsed is IList list) return list;
 
         IDictionary obj = parsed as IDictionary;
@@ -482,4 +488,5 @@ public class Carrot_Hub : MonoBehaviour
             { "stringValue", value.ToString() }
         };
     }
+}
 }

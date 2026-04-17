@@ -1,6 +1,9 @@
 using System.Collections;
 using System;
 using System.Collections.Generic;
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.Networking;
@@ -29,6 +32,7 @@ namespace Carrot
         private IDictionary DataLangApp = null;
         private IDictionary DataLangApp_en = null;
         private string NameFileCustomerFrw = "FrameworkLangCustomer";
+        private string langAppResourcePath = "";
         private const string CountryCacheDataKey = "carrot_country_cache_data";
         private const string CountryCacheTimeKey = "carrot_country_cache_time";
         private const double CountryCacheDays = 7d;
@@ -52,7 +56,7 @@ namespace Carrot
 
             if (this.carrot.FileNameLangApp != "")
             {
-                TextAsset DataLanAppText = Resources.Load<TextAsset>(this.carrot.FileNameLangApp);
+                TextAsset DataLanAppText = this.LoadLangAppAsset();
                 if (DataLanAppText != null)
                 {
                     this.DataLangApp = Json.Deserialize(DataLanAppText.text) as IDictionary;
@@ -83,6 +87,84 @@ namespace Carrot
                     foreach (var key in data_lang_cur.Keys) this.data_lang_value[key.ToString()] = data_lang_cur[key.ToString()].ToString();
                 }
             }
+        }
+
+        private TextAsset LoadLangAppAsset()
+        {
+            string configuredPath = this.NormalizeResourcePath(this.carrot.FileNameLangApp);
+            if (configuredPath == "")
+            {
+                this.langAppResourcePath = "";
+                return null;
+            }
+
+            TextAsset langAsset = Resources.Load<TextAsset>(configuredPath);
+            if (langAsset != null)
+            {
+                this.langAppResourcePath = configuredPath;
+                return langAsset;
+            }
+
+            string fileNameOnly = System.IO.Path.GetFileNameWithoutExtension(configuredPath);
+            TextAsset[] assets = Resources.LoadAll<TextAsset>("");
+            List<TextAsset> matchedAssets = new List<TextAsset>();
+            for (int i = 0; i < assets.Length; i++)
+            {
+                if (assets[i] != null && assets[i].name == fileNameOnly) matchedAssets.Add(assets[i]);
+            }
+
+            if (matchedAssets.Count == 0)
+            {
+                this.langAppResourcePath = configuredPath;
+                Debug.LogWarning("Carrot_lang could not find language file in Resources: " + configuredPath);
+                return null;
+            }
+
+            if (matchedAssets.Count > 1)
+            {
+                Debug.LogWarning("Carrot_lang found multiple Resources text assets named '" + fileNameOnly + "'. Please set FileNameLangApp to the full Resources path.");
+            }
+
+            langAsset = matchedAssets[0];
+            this.langAppResourcePath = this.GetResourcePath(langAsset, configuredPath, fileNameOnly);
+
+            if (this.carrot.model_app == ModelApp.Develope)
+            {
+                Debug.LogWarning("Carrot_lang auto-resolved FileNameLangApp '" + this.carrot.FileNameLangApp + "' to '" + this.langAppResourcePath + "'. Set the full Resources path to avoid ambiguity.");
+            }
+
+            return langAsset;
+        }
+
+        private string NormalizeResourcePath(string resourcePath)
+        {
+            if (string.IsNullOrWhiteSpace(resourcePath)) return "";
+
+            string normalizedPath = resourcePath.Trim().Replace("\\", "/");
+            if (normalizedPath.EndsWith(".json", StringComparison.OrdinalIgnoreCase))
+            {
+                normalizedPath = normalizedPath.Substring(0, normalizedPath.Length - 5);
+            }
+
+            return normalizedPath;
+        }
+
+        private string GetResourcePath(TextAsset asset, string fallbackPath, string fileNameOnly)
+        {
+#if UNITY_EDITOR
+            string assetPath = AssetDatabase.GetAssetPath(asset);
+            if (!string.IsNullOrEmpty(assetPath))
+            {
+                const string resourcesFolder = "/Resources/";
+                int resourceIndex = assetPath.IndexOf(resourcesFolder, StringComparison.OrdinalIgnoreCase);
+                if (resourceIndex >= 0)
+                {
+                    string resourcePath = assetPath.Substring(resourceIndex + resourcesFolder.Length);
+                    return System.IO.Path.ChangeExtension(resourcePath, null).Replace("\\", "/");
+                }
+            }
+#endif
+            return string.IsNullOrEmpty(fallbackPath) ? fileNameOnly : fallbackPath;
         }
 
         private void Load_icon_lang()
@@ -321,7 +403,14 @@ namespace Carrot
 
         private void UpdateDataLangApp()
         {
-            this.carrot.get_tool().save_file("Resources/" + this.carrot.FileNameLangApp + ".json", Json.Serialize(this.DataLangApp));
+            string filePath = this.langAppResourcePath;
+            if (string.IsNullOrEmpty(filePath)) filePath = this.NormalizeResourcePath(this.carrot.FileNameLangApp);
+            if (string.IsNullOrEmpty(filePath))
+            {
+                Debug.LogWarning("Carrot_lang could not save app language data because FileNameLangApp is empty.");
+                return;
+            }
+            this.carrot.get_tool().save_file("Resources/" + filePath + ".json", Json.Serialize(this.DataLangApp));
         }
 
         private void UpdateDataFrw()
@@ -748,6 +837,13 @@ namespace Carrot
             {
                 return s_default;
             }
+        }
+
+        public bool Has_key(string s_key)
+        {
+            if (string.IsNullOrEmpty(s_key)) return false;
+            if (this.data_lang_value == null) return false;
+            return this.data_lang_value[s_key] != null;
         }
     }
 }
