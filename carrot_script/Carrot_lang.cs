@@ -206,6 +206,8 @@ namespace Carrot
             if (this.DataListCountry == null || this.DataListCountry.Count == 0)
             {
                 this.Try_load_country_data_from_cache();
+                if (this.DataListCountry == null || this.DataListCountry.Count == 0)
+                    this.DataListCountry = this.Get_default_country_list();
             }
 
             if (this.DataListCountry != null && this.DataListCountry.Count > 0)
@@ -216,7 +218,6 @@ namespace Carrot
             else
             {
                 this.Refresh_country_data_if_needed(true);
-                if (this.carrot.is_offline()) this.carrot.Show_msg(this.carrot.lang.Val("sel_lang_app", "Choose your language and country"), this.carrot.lang.Val("list_none", "List is empty, no items found!"));
             }
         }
 
@@ -523,6 +524,43 @@ namespace Carrot
             return true;
         }
 
+        private IList Get_default_country_list()
+        {
+            IList list_country = Json.Deserialize("[]") as IList;
+            this.Add_default_country(list_country, "ar", "Arabic", "ar-XA", "r2:image/ar.png");
+            this.Add_default_country(list_country, "zh", "Chinese", "zh-CN", "r2:image/zh.png");
+            this.Add_default_country(list_country, "cs", "Czech", "cs-CZ", "r2:image/cs.png");
+            this.Add_default_country(list_country, "da", "Danish", "da-DK", "r2:image/da.png");
+            this.Add_default_country(list_country, "nl", "Dutch", "nl-NL", "r2:image/nl.png");
+            this.Add_default_country(list_country, "en", "English", "en-US", "r2:image/en.png");
+            this.Add_default_country(list_country, "fi", "Finnish", "fi-FI", "r2:image/fi.png");
+            this.Add_default_country(list_country, "fr", "French", "fr-FR", "r2:image/fr.png");
+            this.Add_default_country(list_country, "de", "German", "de-DE", "r2:image/de.png");
+            this.Add_default_country(list_country, "hi", "Hindi", "hi-IN", "r2:image/hi.png");
+            this.Add_default_country(list_country, "it", "Italian", "it-IT", "r2:image/it.png");
+            this.Add_default_country(list_country, "ja", "Japanese", "ja-JP", "r2:image/ja.png");
+            this.Add_default_country(list_country, "ko", "Korean", "ko-KR", "r2:image/ko.png");
+            this.Add_default_country(list_country, "pl", "Polish", "pl-PL", "r2:image/pl.png");
+            this.Add_default_country(list_country, "pt", "Portuguese", "pt-PT", "r2:image/pt.png");
+            this.Add_default_country(list_country, "ru", "Russian", "ru-RU", "r2:image/ru.png");
+            this.Add_default_country(list_country, "es", "Spanish", "es-ES", "r2:image/es.png");
+            this.Add_default_country(list_country, "th", "Thai", "th-TH", "r2:image/th.png");
+            this.Add_default_country(list_country, "tr", "Turkish", "tr-TR", "r2:image/tr.png");
+            this.Add_default_country(list_country, "vi", "Vietnamese", "vi-VN", "r2:image/vi.png");
+            return this.Normalize_country_list(list_country);
+        }
+
+        private void Add_default_country(IList list_country, string s_id, string s_name, string s_key_voice, string s_icon)
+        {
+            IDictionary item = Json.Deserialize("{}") as IDictionary;
+            item["id"] = s_id;
+            item["name"] = s_name;
+            item["key_voice"] = s_key_voice;
+            item["icon"] = s_icon;
+            item["sync_status"] = 0;
+            list_country.Add(item);
+        }
+
         private IList Normalize_country_list(object data_raw)
         {
             IList source_list = data_raw as IList;
@@ -564,7 +602,12 @@ namespace Carrot
 
         private void Refresh_country_data_if_needed(bool reload_ui_when_done)
         {
-            if (this.carrot == null || this.carrot.hub == null || this.carrot.is_offline()) return;
+            if (this.carrot == null) return;
+            if (this.carrot.hub == null)
+            {
+                if (reload_ui_when_done) this.Show_country_list_unavailable_msg();
+                return;
+            }
             if (this.is_loading_country_data) return;
             if (!reload_ui_when_done && this.DataListCountry != null && this.DataListCountry.Count > 0 && this.Is_country_cache_fresh()) return;
 
@@ -584,6 +627,8 @@ namespace Carrot
                 if (list_country == null || list_country.Count == 0)
                 {
                     if (reload_ui_when_done) this.carrot.hide_loading();
+                    if (reload_ui_when_done && (this.DataListCountry == null || this.DataListCountry.Count == 0))
+                        this.Show_country_list_unavailable_msg();
                     return;
                 }
 
@@ -599,8 +644,23 @@ namespace Carrot
                 if (reload_ui_when_done && this.DataListCountry != null && this.DataListCountry.Count > 0)
                     this.Load_list_lang_by_data(this.DataListCountry);
                 else if (reload_ui_when_done)
+                {
                     this.carrot.hide_loading();
+                    this.Show_country_list_unavailable_msg();
+                }
             });
+        }
+
+        private void Show_country_list_unavailable_msg()
+        {
+            this.carrot.hide_loading();
+            string s_title = this.carrot.lang.Val("sel_lang_app", "Choose your language and country");
+            string s_msg = this.carrot.lang.Val("list_none", "List is empty, no items found!");
+
+            if (this.carrot.is_offline())
+                s_msg = this.carrot.lang.Val("lost_connect_msg", "Please check your network connection, currently the app cannot access the Internet");
+
+            this.carrot.Show_msg(s_title, s_msg);
         }
 
         public void Load_lang_emp()
