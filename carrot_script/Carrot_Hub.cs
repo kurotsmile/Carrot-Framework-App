@@ -8,14 +8,10 @@ namespace Carrot
 {
 public class Carrot_Hub : MonoBehaviour
 {
+    [Header("Object Main")]
+    public Carrot carrot;
     public string SUPABASE_URL;
     public string SUPABASE_ANON_KEY;
-
-    private string GetServerWorkerPublic()
-    {
-        Carrot carrot = this.GetComponent<Carrot>();
-        return carrot != null ? carrot.url_worker : "";
-    }
 
     public void ReadTable(string nameTable, UnityAction<string> actDone, UnityAction<string> actErr)
     {
@@ -34,7 +30,7 @@ public class Carrot_Hub : MonoBehaviour
         UnityAction<string> onError
     )
     {
-        string url = this.GetServerWorkerPublic() + "/read_table";
+        string url = this.carrot.url_worker + "/read_table";
 
         Dictionary<string, object> data = new()
         {
@@ -173,7 +169,7 @@ public class Carrot_Hub : MonoBehaviour
 
     private IEnumerator UpdateFieldDocumentS(string collectionId, string documentId, string fieldID, string jsonData, UnityAction<string> act_done, UnityAction<string> act_fail)
     {
-        string url = this.GetServerWorkerPublic() + "/update_field_document";
+        string url = this.carrot.url_worker + "/update_field_document";
 
         IDictionary payload = new Dictionary<string, object>
         {
@@ -237,7 +233,7 @@ public class Carrot_Hub : MonoBehaviour
 
     private IEnumerator PostWorkerS(string path, object payload, UnityAction<string> actDone, UnityAction<string> actErr)
     {
-        string url = this.GetServerWorkerPublic() + path;
+        string url = this.carrot.url_worker + path;
         byte[] body = System.Text.Encoding.UTF8.GetBytes(Json.Serialize(payload));
         UnityWebRequest req = new(url, "POST");
         req.uploadHandler = new UploadHandlerRaw(body);
@@ -254,7 +250,7 @@ public class Carrot_Hub : MonoBehaviour
 
     private string Build_worker_url(string path, Dictionary<string, string> queryParams)
     {
-        string url = this.GetServerWorkerPublic() + path;
+        string url = this.carrot.url_worker + path;
         if (queryParams == null || queryParams.Count == 0) return url;
 
         List<string> parts = new();

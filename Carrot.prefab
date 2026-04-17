@@ -562,5 +562,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 62edc94484b6d436da357b6f7885afba, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  carrot: {fileID: 5170736565810424378}
   SUPABASE_URL: https://sdrpptgncqqlizpvqdzr.supabase.co
   SUPABASE_ANON_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNkcnBwdGduY3FxbGl6cHZxZHpyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk1MzIyMTUsImV4cCI6MjA3NTEwODIxNX0.Dtj9V0lVuU5dH2GQcH0HLXAdt2i4yreFgSE0-f7Dv0I '
