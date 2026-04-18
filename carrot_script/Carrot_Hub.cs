@@ -195,6 +195,46 @@ public class Carrot_Hub : MonoBehaviour
 
     public void SearchSong(string query, string lang, int page, int limit, UnityAction<string> actDone, UnityAction<string> actErr, string userId = "", bool logSearch = false)
     {
+        this.SearchSong(query, lang, page, limit, actDone, actErr, userId, logSearch, "", "");
+    }
+
+    public void ListSong(string lang, int page, int limit, string orderKey, string orderType, UnityAction<string> actDone, UnityAction<string> actErr, string filterKey = "", string filterValue = "")
+    {
+        Dictionary<string, string> queryParams = new();
+        if (!string.IsNullOrEmpty(lang)) queryParams["lang"] = lang;
+        if (!string.IsNullOrEmpty(filterKey) && !string.IsNullOrEmpty(filterValue))
+        {
+            queryParams["key"] = filterKey;
+            queryParams["value"] = filterValue;
+        }
+
+        queryParams["page"] = Math.Max(1, page).ToString();
+        queryParams["limit"] = limit.ToString();
+
+        if (!string.IsNullOrEmpty(orderKey)) queryParams["order_key"] = orderKey;
+        if (!string.IsNullOrEmpty(orderType)) queryParams["order_type"] = orderType;
+
+        StartCoroutine(GetWorkerS("/list_song", queryParams, actDone, actErr));
+    }
+
+    public void GetSongById(string songId, UnityAction<string> actDone, UnityAction<string> actErr)
+    {
+        if (string.IsNullOrEmpty(songId))
+        {
+            actErr?.Invoke("Missing song id");
+            return;
+        }
+
+        Dictionary<string, string> queryParams = new()
+        {
+            { "id", songId }
+        };
+
+        StartCoroutine(GetWorkerS("/get_song", queryParams, actDone, actErr));
+    }
+
+    public void SearchSong(string query, string lang, int page, int limit, UnityAction<string> actDone, UnityAction<string> actErr, string userId, bool logSearch, string orderKey, string orderType)
+    {
         Dictionary<string, string> queryParams = new();
         if (!string.IsNullOrEmpty(query)) queryParams["q"] = query;
         if (!string.IsNullOrEmpty(lang)) queryParams["lang"] = lang;
@@ -202,6 +242,8 @@ public class Carrot_Hub : MonoBehaviour
         queryParams["page"] = Math.Max(1, page).ToString();
         queryParams["limit"] = Math.Max(1, limit).ToString();
         queryParams["log"] = logSearch ? "1" : "0";
+        if (!string.IsNullOrEmpty(orderKey)) queryParams["order_key"] = orderKey;
+        if (!string.IsNullOrEmpty(orderType)) queryParams["order_type"] = orderType;
         StartCoroutine(GetWorkerS("/search_song", queryParams, actDone, actErr));
     }
 
