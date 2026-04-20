@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.Networking;
@@ -176,17 +177,17 @@ namespace Carrot
         public void save_file(string name_file_save, byte[] data_file)
         {
             if (Application.isEditor)
-                System.IO.File.WriteAllBytes(Application.dataPath + "/" + name_file_save, data_file);
+                File.WriteAllBytes(Application.dataPath + "/" + name_file_save, data_file);
             else
-                System.IO.File.WriteAllBytes(Application.persistentDataPath + "/" + name_file_save, data_file);
+                File.WriteAllBytes(Application.persistentDataPath + "/" + name_file_save, data_file);
         }
 
         public void save_file(string name_file_save,string data_text)
         {
             if (Application.isEditor)
-                System.IO.File.WriteAllText(Application.dataPath + "/" + name_file_save, data_text);
+                File.WriteAllText(Application.dataPath + "/" + name_file_save, data_text);
             else
-                System.IO.File.WriteAllText(Application.persistentDataPath + "/" + name_file_save, data_text);
+                File.WriteAllText(Application.persistentDataPath + "/" + name_file_save, data_text);
         }
 
         public string GetPathFile(string name_file)
@@ -204,7 +205,52 @@ namespace Carrot
             else
                 s_name_folder = Application.persistentDataPath + "/" + s_name_folder;
 
-            if (!System.IO.Directory.Exists(s_name_folder)) System.IO.Directory.CreateDirectory(s_name_folder);
+            if (!Directory.Exists(s_name_folder)) Directory.CreateDirectory(s_name_folder);
+        }
+
+        public string get_persistent_folder_path(string s_name_folder)
+        {
+            return this.Combine_root_path(Application.persistentDataPath, s_name_folder);
+        }
+
+        public void create_persistent_folder(string s_name_folder)
+        {
+            Directory.CreateDirectory(this.get_persistent_folder_path(s_name_folder));
+        }
+
+        public void save_persistent_file(string name_file_save, byte[] data_file)
+        {
+            string full_path = this.get_persistent_file_path(name_file_save);
+            this.Ensure_parent_directory(full_path);
+            File.WriteAllBytes(full_path, data_file);
+        }
+
+        public void save_persistent_file(string name_file_save, string data_text)
+        {
+            string full_path = this.get_persistent_file_path(name_file_save);
+            this.Ensure_parent_directory(full_path);
+            File.WriteAllText(full_path, data_text);
+        }
+
+        public void delete_persistent_file(string name_file)
+        {
+            string full_path = this.get_persistent_file_path(name_file);
+            if (File.Exists(full_path)) File.Delete(full_path);
+        }
+
+        public bool check_persistent_file_exist(string name_file)
+        {
+            return File.Exists(this.get_persistent_file_path(name_file));
+        }
+
+        public string get_persistent_file_path(string name_file)
+        {
+            return this.Combine_root_path(Application.persistentDataPath, name_file);
+        }
+
+        public string get_persistent_file_uri(string name_file)
+        {
+            return new Uri(this.get_persistent_file_path(name_file)).AbsoluteUri;
         }
 
         public Sprite get_sprite_to_playerPrefs(string s_key)
@@ -342,7 +388,7 @@ namespace Carrot
             else
                 name_file = Application.persistentDataPath + "/" + name_file;
 
-            if (System.IO.File.Exists(name_file)) System.IO.File.Delete(name_file);
+            if (File.Exists(name_file)) File.Delete(name_file);
         }
 
         public bool check_file_exist(string name_file)
@@ -351,10 +397,8 @@ namespace Carrot
                 name_file = Application.dataPath + "/" + name_file;
             else
                 name_file = Application.persistentDataPath + "/" + name_file;
-            if (System.IO.File.Exists(name_file))
-                return true;
-            else
-                return false;
+
+            return File.Exists(name_file);
         }
 
         public string get_file_path(string name_file)
@@ -389,6 +433,34 @@ namespace Carrot
                 list[j] = temp;
             }
             return list;
+        }
+
+        private string Combine_root_path(string root_path, string relative_path)
+        {
+            string normalized_relative_path = this.Normalize_relative_path(relative_path);
+            if (string.IsNullOrEmpty(normalized_relative_path)) return root_path;
+
+            string full_path = root_path;
+            string[] parts = normalized_relative_path.Split('/');
+            for (int i = 0; i < parts.Length; i++)
+            {
+                if (string.IsNullOrEmpty(parts[i])) continue;
+                full_path = Path.Combine(full_path, parts[i]);
+            }
+
+            return full_path;
+        }
+
+        private string Normalize_relative_path(string path)
+        {
+            if (string.IsNullOrEmpty(path)) return string.Empty;
+            return path.Replace("\\", "/").TrimStart('/');
+        }
+
+        private void Ensure_parent_directory(string path)
+        {
+            string parent_directory = Path.GetDirectoryName(path);
+            if (!string.IsNullOrEmpty(parent_directory)) Directory.CreateDirectory(parent_directory);
         }
 
     }
