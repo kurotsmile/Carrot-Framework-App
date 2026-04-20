@@ -1599,7 +1599,7 @@
         "fullscreen_tip": "Pencereli ve tam ekran modu arasında geçiş yapın",
         "key_voice": "tr-TR"
     },
-    "zh-CN": {
+    "zh": {
         "cancel": "取消",
         "user_date_start": "加入日期",
         "delete_all_data_tip": "删除所有数据并重置应用，包括购买记录",
