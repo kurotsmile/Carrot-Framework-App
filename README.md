@@ -1,7 +1,9 @@
 # Carrot-Framework-Unity
 Tạo Template và plugin để làm game dễ dàng hơn, với các giao diện tự thiết kế cùng với nhiều chức năng hỗ trợ đa nền tảng
 
-![Logo](https://kurotsmile.github.io/Carrot/images/logo.png)
+<p align="center">
+  <img src="./carrot_img/logo_carrot.png" alt="Carrot Framework Logo" width="160">
+</p>
 
 ## Các chức năng chính
 Các chức năng viết ra nhằm mục đích phục vụi làm game trong hệ thống carrot dễ dàng để thiết lập trên tất cả các game và ứng dụng. Dễ dàng cập nhật. Không can thiệp sâu vào hệ điều hành các nền tảng
