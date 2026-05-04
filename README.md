@@ -2,7 +2,7 @@
 Tạo Template và plugin để làm game dễ dàng hơn, với các giao diện tự thiết kế cùng với nhiều chức năng hỗ trợ đa nền tảng
 
 <p align="center">
-  <img src="./carrot_img/logo_carrot.png" alt="Carrot Framework Logo" width="160">
+  <img src="./carrot_img/carrot_28.png" alt="Carrot Framework Logo" width="160">
 </p>
 
 ## Các chức năng chính
